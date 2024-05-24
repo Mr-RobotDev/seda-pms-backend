@@ -1,36 +1,25 @@
-type Path = string[];
+import { Schema } from 'mongoose';
 
-const deleteAtPath = (obj: any, path: Path, index: number): void => {
-  if (index === path.length - 1) {
-    delete obj[path[index]];
-    return;
-  }
-  deleteAtPath(obj[path[index]], path, index + 1);
-};
-
-const toJSON = (schema: any) => {
-  let transform: any;
-  if (schema.options.toJSON && schema.options.toJSON.transform) {
-    transform = schema.options.toJSON.transform;
-  }
-
-  schema.options.toJSON = Object.assign(schema.options.toJSON || {}, {
-    transform(doc: any, ret: any, options: any) {
-      Object.keys(schema.paths).forEach((path) => {
-        if (schema.paths[path].options && schema.paths[path].options.private) {
-          deleteAtPath(ret, path.split('.'), 0);
-        }
-      });
-
-      ret.id = ret._id.toString();
+function toJSON(schema: Schema) {
+  schema.set('toJSON', {
+    transform: (_doc, ret) => {
+      ret.id = ret._id;
       delete ret._id;
       delete ret.__v;
       delete ret.updatedAt;
-      if (transform) {
-        return transform(doc, ret, options);
-      }
+      return ret;
     },
   });
-};
+
+  schema.set('toObject', {
+    transform: (_doc, ret) => {
+      ret.id = ret._id;
+      delete ret._id;
+      delete ret.__v;
+      delete ret.updatedAt;
+      return ret;
+    },
+  });
+}
 
 export default toJSON;
