@@ -16,8 +16,13 @@ export class DeviceService {
     return this.deviceModel.create(createDeviceDto);
   }
 
-  devices(page?: number, limit?: number) {
-    return this.deviceModel.paginate({}, { page, limit });
+  devices(page?: number, limit?: number, type?: string) {
+    return this.deviceModel.paginate(
+      {
+        ...(type && { type }),
+      },
+      { page, limit },
+    );
   }
 
   async deviceStats() {

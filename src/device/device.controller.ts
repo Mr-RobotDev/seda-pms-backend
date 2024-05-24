@@ -28,8 +28,12 @@ export class DeviceController {
   }
 
   @Get()
-  devices(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.deviceService.devices(page, limit);
+  devices(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('type') type?: string,
+  ) {
+    return this.deviceService.devices(page, limit, type);
   }
 
   @Get('stats')
