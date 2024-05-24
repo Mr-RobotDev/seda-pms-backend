@@ -1,6 +1,11 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { AxisDto } from './axis.dto';
+import { Type } from 'class-transformer';
 
 export class CreateDeviceDto {
+  @IsString()
+  oem?: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -10,14 +15,12 @@ export class CreateDeviceDto {
   type: string;
 
   @IsNumber()
-  @IsNotEmpty()
-  temperature: number;
+  temperature?: number;
 
   @IsNumber()
-  @IsNotEmpty()
-  relativeHumidity: number;
+  relativeHumidity?: number;
 
-  @IsString()
+  @Type(() => AxisDto)
   @IsNotEmpty()
-  oem: string;
+  axis: AxisDto;
 }
