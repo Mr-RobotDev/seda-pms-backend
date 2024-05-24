@@ -13,7 +13,7 @@ export class WebhookService {
     private readonly deviceService: DeviceService,
   ) {}
 
-  async receiveEvents(payload: any, signature: string) {
+  async receiveEvents(payload: any, signature: string): Promise<void> {
     if (!this.verifyRequest(JSON.stringify(payload), signature)) {
       throw new BadRequestException();
     }
