@@ -37,6 +37,15 @@ export class EventService {
         res.write(`data: ${JSON.stringify(formattedDocument)}\n\n`);
       }
     });
+
+    changeStream.on('error', (error) => {
+      console.error(error);
+    });
+
+    res.on('close', () => {
+      changeStream.close();
+      res.end();
+    });
   }
 
   createEvent(
