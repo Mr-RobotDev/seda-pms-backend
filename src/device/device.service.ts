@@ -58,6 +58,7 @@ export class DeviceService {
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
+    return device;
   }
 
   async updateDeviceByOem(

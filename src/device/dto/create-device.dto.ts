@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { AxisDto } from './axis.dto';
+import { LocationDto } from './location.dto';
 import { Type } from 'class-transformer';
 
 export class CreateDeviceDto {
@@ -20,7 +20,7 @@ export class CreateDeviceDto {
   @IsNumber()
   relativeHumidity?: number;
 
-  @Type(() => AxisDto)
+  @Type(() => LocationDto)
   @IsNotEmpty()
-  axis: AxisDto;
+  location: LocationDto;
 }

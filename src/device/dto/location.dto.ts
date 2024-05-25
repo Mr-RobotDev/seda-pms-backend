@@ -1,11 +1,11 @@
 import { IsInt, IsNotEmpty } from 'class-validator';
 
-export class AxisDto {
+export class LocationDto {
   @IsInt()
   @IsNotEmpty()
-  x: number;
+  lat: number;
 
   @IsInt()
   @IsNotEmpty()
-  y: number;
+  long: number;
 }

@@ -6,21 +6,25 @@ import {
   paginatedAggregation,
 } from '../../common/plugins/pagination.plugin';
 
-class Axis extends Document {
+@Schema({
+  _id: false,
+  versionKey: false,
+})
+class Location extends Document {
   @Prop({
     type: Number,
     required: true,
   })
-  x: number;
+  lat: number;
 
   @Prop({
     type: Number,
     required: true,
   })
-  y: number;
+  long: number;
 }
 
-const AxisSchema = SchemaFactory.createForClass(Axis);
+const LocationSchema = SchemaFactory.createForClass(Location);
 
 @Schema({
   timestamps: true,
@@ -57,10 +61,10 @@ export class Device extends Document {
   relativeHumidity?: number;
 
   @Prop({
-    type: AxisSchema,
+    type: LocationSchema,
     required: true,
   })
-  axis: Axis;
+  location: Location;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);
