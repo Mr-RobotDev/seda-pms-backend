@@ -1,17 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
+import { filter, map, Observable, Subject } from 'rxjs';
 import * as moment from 'moment';
 import { Event } from './schema/event.schema';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
 
 @Injectable()
-export class EventService {
+export class EventService implements OnModuleInit {
+  private changeStreamSubject = new Subject<any>();
+
   constructor(
     @InjectModel(Event.name)
     private readonly eventModel: PaginatedModel<Event>,
   ) {}
+
+  async onModuleInit() {
+    const changeStream = this.eventModel.watch();
+    changeStream.on('change', (change) => {
+      this.changeStreamSubject.next(change);
+    });
+  }
+
+  getChangeStream(oem?: string): Observable<any> {
+    return this.changeStreamSubject.asObservable().pipe(
+      filter((change) => !oem || change.fullDocument.oem === oem),
+      map((change) => ({
+        oem: change.fullDocument.oem,
+        eventType: change.fullDocument.eventType,
+        temperature: change.fullDocument.temperature,
+        relativeHumidity: change.fullDocument.relativeHumidity,
+        createdAt: change.fullDocument.createdAt,
+        id: change.fullDocument._id,
+      })),
+    );
+  }
 
   getEventStream(res: Response, oem?: string): void {
     const pipeline = [];
