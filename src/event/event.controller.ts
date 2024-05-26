@@ -11,7 +11,6 @@ import {
 import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import { EventService } from './event.service';
-import { Public } from '../common/decorators/public.decorator';
 
 @Controller({
   path: 'events',
@@ -20,7 +19,6 @@ import { Public } from '../common/decorators/public.decorator';
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
-  @Public()
   @Sse('sse')
   events(@Query('oem') oem?: string): Observable<any> {
     return this.eventService
