@@ -25,6 +25,14 @@ export class DeviceService {
     );
   }
 
+  async device(id: string) {
+    const device = await this.deviceModel.findById(id);
+    if (!device) {
+      throw new NotFoundException(`Device #${id} not found`);
+    }
+    return device;
+  }
+
   async deviceStats() {
     const [stats] = await this.deviceModel.aggregate([
       {
