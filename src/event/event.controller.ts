@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Query, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { EventService } from './event.service';
 
@@ -21,6 +29,7 @@ export class EventController {
   }
 
   @Post('stream')
+  @HttpCode(HttpStatus.OK)
   getEventStream(@Res() res: Response, @Query('oem') oem?: string): void {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');

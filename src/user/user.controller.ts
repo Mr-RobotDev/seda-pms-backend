@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Patch,
   Post,
   Put,
@@ -33,6 +35,7 @@ export class UserController {
 
   @Roles(Role.ADMIN)
   @Post()
+  @HttpCode(HttpStatus.OK)
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }

@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { DeviceService } from './device.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
@@ -23,6 +25,7 @@ export class DeviceController {
 
   @Roles(Role.ADMIN)
   @Post()
+  @HttpCode(HttpStatus.OK)
   createDevice(@Body() createDeviceDto: CreateDeviceDto) {
     return this.deviceService.createDevice(createDeviceDto);
   }
