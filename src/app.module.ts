@@ -14,6 +14,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { WebhookModule } from './webhook/webhook.module';
 import { EventModule } from './event/event.module';
 import { DeviceModule } from './device/device.module';
+import { LogModule } from './log/log.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { DeviceModule } from './device/device.module';
     WebhookModule,
     EventModule,
     DeviceModule,
+    LogModule,
   ],
   controllers: [AppController],
   providers: [
