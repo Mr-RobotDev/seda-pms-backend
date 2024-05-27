@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { DeviceService } from './device.service';
 import { DeviceController } from './device.controller';
-import { MongooseModule } from '@nestjs/mongoose';
 import { Device, DeviceSchema } from './schema/device.schema';
+import { LogModule } from '../log/log.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { Device, DeviceSchema } from './schema/device.schema';
         schema: DeviceSchema,
       },
     ]),
+    LogModule,
   ],
   controllers: [DeviceController],
   providers: [DeviceService],

@@ -16,6 +16,8 @@ import { UpdateDeviceDto } from './dto/update-device.dto';
 import { GetDevicesQueryDto } from './dto/get-devices.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Account } from '../common/interfaces/account.interface';
 
 @Controller({
   path: 'devices',
@@ -27,37 +29,51 @@ export class DeviceController {
   @Roles(Role.ADMIN)
   @Post()
   @HttpCode(HttpStatus.OK)
-  createDevice(@Body() createDeviceDto: CreateDeviceDto) {
-    return this.deviceService.createDevice(createDeviceDto);
+  createDevice(
+    @CurrentUser() account: Account,
+    @Body() createDeviceDto: CreateDeviceDto,
+  ) {
+    return this.deviceService.createDevice(account.sub, createDeviceDto);
   }
 
   @Get()
-  devices(@Query() query?: GetDevicesQueryDto) {
-    return this.deviceService.devices(query);
+  devices(
+    @CurrentUser() account: Account,
+    @Query() query?: GetDevicesQueryDto,
+  ) {
+    return this.deviceService.devices(account.sub, query);
   }
 
   @Get('stats')
-  deviceStats() {
-    return this.deviceService.deviceStats();
+  deviceStats(@CurrentUser() account: Account) {
+    return this.deviceService.deviceStats(account.sub);
   }
 
   @Get(':device')
-  device(@Param('device') device: string) {
-    return this.deviceService.device(device);
+  device(@CurrentUser() account: Account, @Param('device') device: string) {
+    return this.deviceService.device(account.sub, device);
   }
 
   @Roles(Role.ADMIN)
   @Patch(':device')
   updateDevice(
+    @CurrentUser() account: Account,
     @Param('device') device: string,
     @Body() updateDeviceDto: UpdateDeviceDto,
   ) {
-    return this.deviceService.updateDevice(device, updateDeviceDto);
+    return this.deviceService.updateDevice(
+      account.sub,
+      device,
+      updateDeviceDto,
+    );
   }
 
   @Roles(Role.ADMIN)
   @Delete(':device')
-  removeDevice(@Param('device') device: string) {
-    return this.deviceService.removeDevice(device);
+  removeDevice(
+    @CurrentUser() account: Account,
+    @Param('device') device: string,
+  ) {
+    return this.deviceService.removeDevice(account.sub, device);
   }
 }

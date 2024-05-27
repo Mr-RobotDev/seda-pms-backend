@@ -1,24 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Device } from './schema/device.schema';
+import { LogService } from '../log/log.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { GetDevicesQueryDto } from './dto/get-devices.dto';
-import { Device } from './schema/device.schema';
+import { Action } from '../log/enums/action.enum';
+import { Page } from '../log/enums/page.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
+import { Result } from '../common/interfaces/result.interface';
 
 @Injectable()
 export class DeviceService {
   constructor(
     @InjectModel(Device.name)
     private readonly deviceModel: PaginatedModel<Device>,
+    private readonly logService: LogService,
   ) {}
 
-  createDevice(createDeviceDto: CreateDeviceDto) {
-    return this.deviceModel.create(createDeviceDto);
+  async createDevice(
+    user: string,
+    createDeviceDto: CreateDeviceDto,
+  ): Promise<Device> {
+    const device = await this.deviceModel.create(createDeviceDto);
+    await this.logService.createLog(user, {
+      action: Action.CREATED,
+      page: Page.DEVICE,
+      device: device.id,
+    });
+    return device;
   }
 
-  devices(query: GetDevicesQueryDto) {
+  async devices(
+    user: string,
+    query: GetDevicesQueryDto,
+  ): Promise<Result<Device>> {
     const { type, page, limit } = query;
+    await this.logService.createLog(user, {
+      action: Action.VIEWED,
+      page: Page.DEVICES,
+    });
     return this.deviceModel.paginate(
       {
         ...(type && { type }),
@@ -27,15 +48,24 @@ export class DeviceService {
     );
   }
 
-  async device(id: string) {
+  async device(user: string, id: string): Promise<Device> {
     const device = await this.deviceModel.findById(id);
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
+    await this.logService.createLog(user, {
+      action: Action.VIEWED,
+      page: Page.DEVICE,
+      device: id,
+    });
     return device;
   }
 
-  async deviceStats() {
+  async deviceStats(user: string): Promise<{
+    totalDevices: number;
+    highestTemperature: number;
+    highestRelativeHumidity: number;
+  }> {
     const [stats] = await this.deviceModel.aggregate([
       {
         $group: {
@@ -54,10 +84,19 @@ export class DeviceService {
         },
       },
     ]);
+    await this.logService.createLog(user, {
+      action: Action.VIEWED,
+      page: Page.FLOOR_PLAN,
+    });
+
     return stats;
   }
 
-  async updateDevice(id: string, updateDeviceDto: UpdateDeviceDto) {
+  async updateDevice(
+    user: string,
+    id: string,
+    updateDeviceDto: UpdateDeviceDto,
+  ): Promise<Device> {
     const device = await this.deviceModel.findByIdAndUpdate(
       id,
       updateDeviceDto,
@@ -68,6 +107,24 @@ export class DeviceService {
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
+    await this.logService.createLog(user, {
+      action: Action.UPDATED,
+      page: Page.DEVICE,
+      device: id,
+    });
+    return device;
+  }
+
+  async removeDevice(user: string, id: string): Promise<Device> {
+    const device = await this.deviceModel.findByIdAndDelete(id);
+    if (!device) {
+      throw new NotFoundException(`Device #${id} not found`);
+    }
+    await this.logService.createLog(user, {
+      action: Action.DELETED,
+      page: Page.DEVICE,
+      device: id,
+    });
     return device;
   }
 
@@ -76,7 +133,7 @@ export class DeviceService {
     temperature: number,
     relativeHumidity: number,
     updateTime: Date,
-  ) {
+  ): Promise<Device> {
     return this.deviceModel.findOneAndUpdate(
       {
         oem,
@@ -90,13 +147,5 @@ export class DeviceService {
         new: true,
       },
     );
-  }
-
-  async removeDevice(id: string) {
-    const device = await this.deviceModel.findByIdAndDelete(id);
-    if (!device) {
-      throw new NotFoundException(`Device #${id} not found`);
-    }
-    return device;
   }
 }
