@@ -59,11 +59,6 @@ export class User extends Document {
     default: false,
   })
   isActive: boolean;
-
-  @Prop({
-    type: Date,
-  })
-  lastLogin?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
