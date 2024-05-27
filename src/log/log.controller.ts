@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { LogService } from './log.service';
-import { GetUserLogsQueryDto } from './dto/get-user-logs.dto';
+import { GetLogsQueryDto } from './dto/get-logs.dto';
 import { Role } from '../common/enums/role.enum';
 import { Roles } from '../common/decorators/roles.decorator';
 
@@ -13,7 +13,7 @@ export class LogController {
 
   @Roles(Role.ADMIN)
   @Get()
-  async getUserLogs(@Query() query: GetUserLogsQueryDto) {
-    return this.logService.getUserLogs(query);
+  async getLogs(@Query() query: GetLogsQueryDto) {
+    return this.logService.getLogs(query);
   }
 }

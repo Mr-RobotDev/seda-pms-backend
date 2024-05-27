@@ -35,6 +35,8 @@ export class Log extends Document {
   @Prop({
     type: Types.ObjectId,
     ref: Device.name,
+    index: true,
+    sparse: true,
   })
   device?: Device;
 
