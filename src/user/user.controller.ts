@@ -4,9 +4,11 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
   Post,
   Put,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,6 +18,8 @@ import { MediaService } from '../media/media.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateUserRoleDto } from './dto/update-role.dto';
+import { GetUsersQueryDto } from './dto/get-users.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Account } from '../common/interfaces/account.interface';
@@ -43,6 +47,21 @@ export class UserController {
   @Get('me')
   getMe(@CurrentUser() account: Account) {
     return this.userService.getUserById(account.sub);
+  }
+
+  @Roles(Role.ADMIN)
+  @Get()
+  getUsers(@Query() query?: GetUsersQueryDto) {
+    return this.userService.getUsers(query);
+  }
+
+  @Roles(Role.ADMIN)
+  @Patch(':user/update-role')
+  updateUserRole(
+    @Param('user') user: string,
+    @Body() updateUserRoleDto: UpdateUserRoleDto,
+  ) {
+    return this.userService.updateUserRole(user, updateUserRoleDto.role);
   }
 
   @Put('profile')
