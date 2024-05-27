@@ -6,7 +6,10 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
+import { LogService } from '../log/log.service';
 import { LoginDto } from './dto/login.dto';
+import { LogoutDto } from './dto/logout.dto';
+import { Action } from '../log/enums/action.enum';
 import { LoginSuccess } from './types/login-success.type';
 
 @Injectable()
@@ -14,6 +17,7 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly logService: LogService,
   ) {}
 
   async login(loginDto: LoginDto): Promise<LoginSuccess> {
@@ -24,6 +28,11 @@ export class AuthService {
     if (!user.isActive) {
       throw new BadRequestException('Your account is not active yet!');
     }
+
+    await this.logService.createLog(user.id, {
+      action: Action.LOGGED_IN,
+      userAgent: loginDto.userAgent,
+    });
 
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
@@ -51,5 +60,12 @@ export class AuthService {
       },
       token,
     };
+  }
+
+  async logout(user: string, logoutDto: LogoutDto): Promise<void> {
+    await this.logService.createLog(user, {
+      action: Action.LOGGED_OUT,
+      userAgent: logoutDto.userAgent,
+    });
   }
 }
