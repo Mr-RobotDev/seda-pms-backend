@@ -93,7 +93,8 @@ export class EventService implements OnModuleInit {
     query: GetEventsQueryDto,
   ): Promise<{ results: Event[]; totalResults: number }> {
     const { oem, from, to } = query;
-    const adjustedTo = this.setEndOfDay(to);
+    const adjustedTo = new Date(to);
+    adjustedTo.setHours(23, 59, 59, 999);
 
     const events = await this.eventModel
       .find({
@@ -103,11 +104,5 @@ export class EventService implements OnModuleInit {
       .sort({ createdAt: 1 });
 
     return { results: events, totalResults: events.length };
-  }
-
-  private setEndOfDay(date: Date): Date {
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
-    return endOfDay;
   }
 }
