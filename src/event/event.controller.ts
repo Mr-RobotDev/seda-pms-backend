@@ -11,6 +11,7 @@ import {
 import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import { EventService } from './event.service';
+import { GetEventsQueryDto } from './dto/get-events.dto';
 
 @Controller({
   path: 'events',
@@ -27,14 +28,8 @@ export class EventController {
   }
 
   @Get()
-  async getEvents(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('oem') oem?: string,
-  ) {
-    return this.eventService.getEvents(page, limit, from, to, oem);
+  async getEvents(@Query() query: GetEventsQueryDto) {
+    return this.eventService.getEvents(query);
   }
 
   @Post('stream')

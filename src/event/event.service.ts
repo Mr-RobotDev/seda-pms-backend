@@ -2,10 +2,10 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { filter, map, Observable, Subject } from 'rxjs';
-import * as moment from 'moment';
+// import * as moment from 'moment';
 import { Event } from './schema/event.schema';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
-import { Result } from '../common/interfaces/result.interface';
+import { GetEventsQueryDto } from './dto/get-events.dto';
 
 @Injectable()
 export class EventService implements OnModuleInit {
@@ -90,29 +90,18 @@ export class EventService implements OnModuleInit {
   }
 
   async getEvents(
-    page?: number,
-    limit?: number,
-    from?: string,
-    to?: string,
-    oem?: string,
-  ): Promise<Result<Event>> {
-    const defaultTo = moment().toISOString();
-    const defaultFrom = moment().subtract(7, 'days').toISOString();
-    const fromMoment = moment(from || defaultFrom);
-    const toMoment = moment(to || defaultTo);
+    query: GetEventsQueryDto,
+  ): Promise<{ results: Event[]; totalResults: number }> {
+    const { oem, from, to } = query;
 
-    return this.eventModel.paginate(
-      {
+    const events = await this.eventModel
+      .find({
         ...(oem && { oem }),
-        createdAt: {
-          $gte: fromMoment.toDate(),
-          $lte: toMoment.toDate(),
-        },
-      },
-      {
-        page,
-        limit,
-      },
-    );
+        ...(from && { createdAt: { $gte: from } }),
+        ...(to && { createdAt: { $lte: to } }),
+      })
+      .sort({ createdAt: 1 });
+
+    return { results: events, totalResults: events.length };
   }
 }
