@@ -13,6 +13,7 @@ import {
 import { DeviceService } from './device.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
+import { GetDevicesQueryDto } from './dto/get-devices.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 
@@ -31,12 +32,8 @@ export class DeviceController {
   }
 
   @Get()
-  devices(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('type') type?: string,
-  ) {
-    return this.deviceService.devices(page, limit, type);
+  devices(@Query() query?: GetDevicesQueryDto) {
+    return this.deviceService.devices(query);
   }
 
   @Get('stats')

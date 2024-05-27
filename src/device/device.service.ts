@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
+import { GetDevicesQueryDto } from './dto/get-devices.dto';
 import { Device } from './schema/device.schema';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 
@@ -16,7 +17,8 @@ export class DeviceService {
     return this.deviceModel.create(createDeviceDto);
   }
 
-  devices(page?: number, limit?: number, type?: string) {
+  devices(query: GetDevicesQueryDto) {
+    const { type, page, limit } = query;
     return this.deviceModel.paginate(
       {
         ...(type && { type }),
