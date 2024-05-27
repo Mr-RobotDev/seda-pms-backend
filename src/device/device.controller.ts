@@ -39,14 +39,14 @@ export class DeviceController {
     return this.deviceService.devices(page, limit, type);
   }
 
-  @Get(':device')
-  device(@Param('device') device: string) {
-    return this.deviceService.device(device);
-  }
-
   @Get('stats')
   deviceStats() {
     return this.deviceService.deviceStats();
+  }
+
+  @Get(':device')
+  device(@Param('device') device: string) {
+    return this.deviceService.device(device);
   }
 
   @Roles(Role.ADMIN)
