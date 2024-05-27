@@ -1,0 +1,20 @@
+import { IsIn, IsNotEmpty, IsString } from 'class-validator';
+import { Action, ActionValues } from '../enums/action.enum';
+import { Page, PageValues } from '../enums/page.enum';
+
+export class CreateLogDto {
+  @IsIn(ActionValues)
+  @IsString()
+  @IsNotEmpty()
+  action: Action;
+
+  @IsIn(PageValues)
+  @IsString()
+  page?: Page;
+
+  @IsString()
+  device?: string;
+
+  @IsString()
+  userAgent?: string;
+}
