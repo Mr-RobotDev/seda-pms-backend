@@ -25,6 +25,10 @@ export class AuthService {
       throw new BadRequestException('Your account is not active yet!');
     }
 
+    await this.userService.updateUser(user.id, {
+      lastLogin: new Date(),
+    });
+
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
       user.password,
@@ -34,7 +38,7 @@ export class AuthService {
     }
 
     const payload = {
-      sub: user._id,
+      sub: user.id,
       email: user.email,
       role: user.role,
     };
