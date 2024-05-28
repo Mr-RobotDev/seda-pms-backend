@@ -1,6 +1,7 @@
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from '../config/configuration';
 import { AppController } from './app.controller';
@@ -31,6 +32,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
       isGlobal: true,
       ignoreEnvFile: false,
     }),
+    CacheModule.register({
+      ttl: 3600,
+      max: 50,
+    }),
     MediaModule,
     UserModule,
     AuthModule,
@@ -50,6 +55,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
     },
   ],
 })
