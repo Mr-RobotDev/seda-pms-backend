@@ -15,6 +15,7 @@ import { WebhookModule } from './webhook/webhook.module';
 import { EventModule } from './event/event.module';
 import { DeviceModule } from './device/device.module';
 import { LogModule } from './log/log.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { LogModule } from './log/log.module';
     EventModule,
     DeviceModule,
     LogModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [
