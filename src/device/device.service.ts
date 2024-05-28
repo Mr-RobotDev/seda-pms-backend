@@ -5,6 +5,7 @@ import { LogService } from '../log/log.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { GetDevicesQueryDto } from './dto/get-devices.dto';
+import { UpdateDeviceByOem } from './dto/update-device-by-oem.dto';
 import { Action } from '../log/enums/action.enum';
 import { Page } from '../log/enums/page.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
@@ -49,7 +50,7 @@ export class DeviceService {
   }
 
   async device(user: string, id: string): Promise<Device> {
-    const device = await this.deviceModel.findById(id);
+    const device = await this.deviceModel.findById(id, '-createdAt');
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
@@ -130,19 +131,13 @@ export class DeviceService {
 
   async updateDeviceByOem(
     oem: string,
-    temperature: number,
-    relativeHumidity: number,
-    updateTime: Date,
+    updateDeviceByOem: UpdateDeviceByOem,
   ): Promise<Device> {
     return this.deviceModel.findOneAndUpdate(
       {
         oem,
       },
-      {
-        temperature,
-        relativeHumidity,
-        updatedAt: updateTime,
-      },
+      updateDeviceByOem,
       {
         new: true,
       },
