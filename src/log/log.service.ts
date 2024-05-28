@@ -33,12 +33,16 @@ export class LogService {
         limit,
         populate: [
           {
-            path: 'user',
-            select: 'firstName lastName profile',
+            path: 'dashboard',
+            select: 'name',
           },
           {
             path: 'device',
             select: 'name',
+          },
+          {
+            path: 'user',
+            select: 'firstName lastName profile',
           },
         ],
       },

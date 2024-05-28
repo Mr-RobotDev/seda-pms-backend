@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { User } from '../../user/schema/user.schema';
 import { Device } from '../../device/schema/device.schema';
+import { Dashboard } from '../../dashboard/schema/dashboard.schema';
 import { Action, ActionValues } from '../enums/action.enum';
 import { Page, PageValues } from '../enums/page.enum';
 import toJSON from '../../common/plugins/toJSON.plugin';
@@ -31,6 +32,14 @@ export class Log extends Document {
     type: String,
   })
   userAgent?: string;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Dashboard.name,
+    index: true,
+    sparse: true,
+  })
+  dashboard?: Dashboard;
 
   @Prop({
     type: Types.ObjectId,
