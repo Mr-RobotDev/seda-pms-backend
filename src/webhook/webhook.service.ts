@@ -86,6 +86,9 @@ export class WebhookService {
     const signalStrength: number =
       payload.event.data.networkStatus.signalStrength;
 
+    console.log('oem', oem);
+    console.log('signalStrength', signalStrength);
+
     await this.deviceService.updateDeviceByOem(oem, {
       signalStrength,
     });
@@ -94,7 +97,9 @@ export class WebhookService {
   private async handleConnectionStatusEvent(payload: any): Promise<void> {
     const oem: string = payload.metadata.deviceId;
     const isOffline: boolean =
-      payload.event.data.connectionStatus.connection === 'OFFLINE';
+      payload.event.data.connectionStatus.connection === 'OFFLINE'
+        ? true
+        : false;
 
     await this.deviceService.updateDeviceByOem(oem, {
       isOffline,
