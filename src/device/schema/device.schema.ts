@@ -61,6 +61,22 @@ export class Device extends Document {
   relativeHumidity?: number;
 
   @Prop({
+    type: Number,
+  })
+  signalStrength?: number;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  isOffline?: boolean;
+
+  @Prop({
+    type: Date,
+  })
+  lastUpdated?: Date;
+
+  @Prop({
     type: LocationSchema,
     required: true,
   })
