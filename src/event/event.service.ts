@@ -2,7 +2,6 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { filter, map, Observable, Subject } from 'rxjs';
-// import * as moment from 'moment';
 import { Event } from './schema/event.schema';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { GetEventsQueryDto } from './dto/get-events.dto';
