@@ -86,9 +86,6 @@ export class WebhookService {
     const signalStrength: number =
       payload.event.data.networkStatus.signalStrength;
 
-    console.log('oem', oem);
-    console.log('signalStrength', signalStrength);
-
     await this.deviceService.updateDeviceByOem(oem, {
       signalStrength,
     });
