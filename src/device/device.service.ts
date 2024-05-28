@@ -66,6 +66,8 @@ export class DeviceService {
     totalDevices: number;
     highestTemperature: number;
     highestRelativeHumidity: number;
+    online: number;
+    offline: number;
   }> {
     const [stats] = await this.deviceModel.aggregate([
       {
@@ -74,6 +76,16 @@ export class DeviceService {
           totalDevices: { $sum: 1 },
           highestTemperature: { $max: '$temperature' },
           highestRelativeHumidity: { $max: '$relativeHumidity' },
+          online: {
+            $sum: {
+              $cond: [{ $eq: ['$isOffline', false] }, 1, 0],
+            },
+          },
+          offline: {
+            $sum: {
+              $cond: [{ $eq: ['$isOffline', true] }, 1, 0],
+            },
+          },
         },
       },
       {
@@ -82,6 +94,8 @@ export class DeviceService {
           totalDevices: 1,
           highestTemperature: 1,
           highestRelativeHumidity: 1,
+          online: 1,
+          offline: 1,
         },
       },
     ]);
