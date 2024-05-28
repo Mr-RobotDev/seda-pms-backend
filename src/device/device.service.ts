@@ -45,7 +45,7 @@ export class DeviceService {
       {
         ...(type && { type }),
       },
-      { page, limit },
+      { page, limit, projection: '-createdAt' },
     );
   }
 
