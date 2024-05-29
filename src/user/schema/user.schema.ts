@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { Organization, OrganizationValues } from '../enums/organization.enum';
 import { Role, RoleValues } from '../../common/enums/role.enum';
 import toJSON from '../../common/plugins/toJSON.plugin';
 import {
@@ -43,6 +44,7 @@ export class User extends Document {
   password: string;
 
   @Prop({
+    type: String,
     required: true,
     enum: RoleValues,
     default: Role.USER,
@@ -59,6 +61,13 @@ export class User extends Document {
     default: false,
   })
   isActive: boolean;
+
+  @Prop({
+    type: String,
+    required: true,
+    enum: OrganizationValues,
+  })
+  organization: Organization;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -71,6 +80,12 @@ UserSchema.pre<User>('save', async function (next) {
   const hash = await bcrypt.hash(this.password, salt);
   this.password = hash;
   next();
+});
+
+UserSchema.index({
+  firstName: 1,
+  lastName: 1,
+  email: 1,
 });
 
 UserSchema.plugin(toJSON);

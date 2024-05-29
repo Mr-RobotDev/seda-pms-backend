@@ -6,6 +6,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Role, RoleValues } from '../../common/enums/role.enum';
+import { Organization, OrganizationValues } from '../enums/organization.enum';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -29,4 +30,9 @@ export class CreateUserDto {
   @IsIn(RoleValues)
   @IsString()
   role: Role;
+
+  @IsIn(OrganizationValues)
+  @IsString()
+  @IsNotEmpty()
+  organization: Organization;
 }

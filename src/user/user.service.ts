@@ -13,6 +13,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { GetUsersQueryDto } from './dto/get-users.dto';
 import { Role } from '../common/enums/role.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
+import { Result } from '../common/interfaces/result.interface';
 
 @Injectable()
 export class UserService {
@@ -65,7 +66,7 @@ export class UserService {
     };
   }
 
-  async getUsers(query: GetUsersQueryDto) {
+  async getUsers(query: GetUsersQueryDto): Promise<Result<User>> {
     const { search, page, limit } = query;
     return this.userModel.paginate(
       {
