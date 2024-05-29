@@ -8,7 +8,6 @@ import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 import { LogService } from '../log/log.service';
 import { LoginDto } from './dto/login.dto';
-import { LogoutDto } from './dto/logout.dto';
 import { Action } from '../log/enums/action.enum';
 import { LoginSuccess } from './types/login-success.type';
 
@@ -20,7 +19,7 @@ export class AuthService {
     private readonly logService: LogService,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<LoginSuccess> {
+  async login(loginDto: LoginDto, userAgent: string): Promise<LoginSuccess> {
     const user = await this.userService.getUserByEmail(loginDto.email);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -31,7 +30,7 @@ export class AuthService {
 
     await this.logService.createLog(user.id, {
       action: Action.LOGGED_IN,
-      userAgent: loginDto.userAgent,
+      userAgent,
     });
 
     const isPasswordValid = await bcrypt.compare(
@@ -62,10 +61,10 @@ export class AuthService {
     };
   }
 
-  async logout(user: string, logoutDto: LogoutDto): Promise<void> {
+  async logout(user: string, userAgent: string): Promise<void> {
     await this.logService.createLog(user, {
       action: Action.LOGGED_OUT,
-      userAgent: logoutDto.userAgent,
+      userAgent,
     });
   }
 }
