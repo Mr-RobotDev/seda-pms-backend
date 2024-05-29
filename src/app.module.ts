@@ -17,6 +17,7 @@ import { EventModule } from './event/event.module';
 import { DeviceModule } from './device/device.module';
 import { LogModule } from './log/log.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { CardModule } from './card/card.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     DeviceModule,
     LogModule,
     DashboardModule,
+    CardModule,
   ],
   controllers: [AppController],
   providers: [
