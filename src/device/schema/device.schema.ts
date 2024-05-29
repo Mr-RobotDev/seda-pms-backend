@@ -85,6 +85,8 @@ export class Device extends Document {
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);
 
+DeviceSchema.index({ oem: 1, name: 1 });
+
 DeviceSchema.plugin(toJSON);
 DeviceSchema.plugin(paginate);
 DeviceSchema.plugin(paginatedAggregation);

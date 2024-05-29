@@ -36,7 +36,7 @@ export class DeviceService {
     user: string,
     query: GetDevicesQueryDto,
   ): Promise<Result<Device>> {
-    const { type, page, limit } = query;
+    const { type, search, page, limit } = query;
     await this.logService.createLog(user, {
       action: Action.VIEWED,
       page: Page.DEVICES,
@@ -44,6 +44,12 @@ export class DeviceService {
     return this.deviceModel.paginate(
       {
         ...(type && { type }),
+        ...(search && {
+          $or: [
+            { oem: { $regex: search, $options: 'i' } },
+            { name: { $regex: search, $options: 'i' } },
+          ],
+        }),
       },
       { page, limit, projection: '-createdAt' },
     );

@@ -5,4 +5,8 @@ export class GetDevicesQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   type?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
