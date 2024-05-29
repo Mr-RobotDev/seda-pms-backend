@@ -27,11 +27,6 @@ export class EventController {
       .pipe(map((change) => ({ data: change })));
   }
 
-  @Get()
-  async getEvents(@Query() query: GetEventsQueryDto) {
-    return this.eventService.getEvents(query);
-  }
-
   @Post('stream')
   @HttpCode(HttpStatus.OK)
   getEventStream(@Res() res: Response, @Query('oem') oem?: string): void {
@@ -41,5 +36,15 @@ export class EventController {
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
     this.eventService.getEventStream(res, oem);
+  }
+
+  @Get()
+  async getEvents(@Query() query: GetEventsQueryDto) {
+    return this.eventService.getEvents(query);
+  }
+
+  @Get('export')
+  async exportEvents(@Query() query: GetEventsQueryDto) {
+    return this.eventService.exportEvents(query);
   }
 }

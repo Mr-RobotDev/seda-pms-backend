@@ -70,9 +70,11 @@ export class UserController {
     @CurrentUser() account: Account,
     @UploadedFile(new ImageUploadPipe()) file: Express.Multer.File,
   ) {
-    const profile = await this.mediaService.uploadImage(
-      file,
+    const profile = await this.mediaService.uploadFile(
+      file.buffer,
+      file.originalname,
       Folder.PROFILES,
+      file.mimetype,
       account.sub,
     );
     await this.userService.updateUser(account.sub, { profile });

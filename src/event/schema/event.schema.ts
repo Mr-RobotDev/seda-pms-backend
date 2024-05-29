@@ -34,6 +34,8 @@ export class Event extends Document {
     required: true,
   })
   relativeHumidity: number;
+
+  createdAt: Date;
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

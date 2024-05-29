@@ -2,9 +2,15 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { filter, map, Observable, Subject } from 'rxjs';
+import { createObjectCsvWriter } from 'csv-writer';
+import { format } from 'date-fns';
+import * as path from 'path';
+import * as fs from 'fs';
 import { Event } from './schema/event.schema';
-import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
+import { MediaService } from '../media/media.service';
 import { GetEventsQueryDto } from './dto/get-events.dto';
+import { Folder } from '../common/enums/folder.enum';
+import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 
 @Injectable()
 export class EventService implements OnModuleInit {
@@ -13,6 +19,7 @@ export class EventService implements OnModuleInit {
   constructor(
     @InjectModel(Event.name)
     private readonly eventModel: PaginatedModel<Event>,
+    private readonly mediaService: MediaService,
   ) {}
 
   async onModuleInit() {
@@ -103,5 +110,48 @@ export class EventService implements OnModuleInit {
       .sort({ createdAt: 1 });
 
     return { results: events, totalResults: events.length };
+  }
+
+  async exportEvents(query: GetEventsQueryDto): Promise<{ url: string }> {
+    const { from, to } = query;
+    const events = await this.getEvents(query);
+
+    const exportsDirectory = path.join(__dirname, '../../../exports');
+    if (!fs.existsSync(exportsDirectory)) {
+      fs.mkdirSync(exportsDirectory, { recursive: true });
+    }
+
+    const formattedFrom = format(new Date(from), 'MMMM d, yyyy');
+    const formattedTo = format(new Date(to), 'MMMM d, yyyy');
+
+    const filePath = path.join(
+      exportsDirectory,
+      `Events (${formattedFrom} - ${formattedTo}).csv`,
+    );
+
+    const csvWriter = createObjectCsvWriter({
+      path: filePath,
+      header: [
+        { id: 'id', title: 'Id' },
+        { id: 'oem', title: 'Oem' },
+        { id: 'eventType', title: 'Event Type' },
+        { id: 'temperature', title: 'Temperature (°C)' },
+        { id: 'relativeHumidity', title: 'Relative Humidity (%)' },
+        { id: 'createdAt', title: 'Created At' },
+      ],
+    });
+
+    const records = events.results.map((event) => ({
+      id: event.id,
+      oem: event.oem,
+      eventType: event.eventType,
+      temperature: event.temperature,
+      relativeHumidity: event.relativeHumidity,
+      createdAt: event.createdAt,
+    }));
+    await csvWriter.writeRecords(records);
+
+    const url = await this.mediaService.uploadCsv(filePath, Folder.EXPORTS);
+    return { url };
   }
 }

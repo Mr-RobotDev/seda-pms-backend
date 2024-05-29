@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { S3, PutObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class MediaService {
@@ -19,29 +20,40 @@ export class MediaService {
     });
   }
 
-  async uploadImage(
-    file: Express.Multer.File,
+  async uploadFile(
+    fileBuffer: Buffer,
+    originalname: string,
     folder: string,
+    mimetype?: string,
     user?: string,
   ): Promise<string> {
     try {
-      const extension = path.parse(file.originalname).ext;
+      const extension = path.parse(originalname).ext;
       const key = user
         ? `${user}/${folder}/${uuidv4()}${extension}`
-        : `${folder}/${uuidv4()}${extension}`;
+        : `${folder}/${originalname}`;
 
       await this.s3.send(
         new PutObjectCommand({
           Bucket: this.configService.get('spaces.bucket'),
           Key: key,
-          Body: file.buffer,
+          Body: fileBuffer,
           ACL: ObjectCannedACL.public_read,
-          ContentType: file.mimetype,
+          ...(mimetype && { ContentType: mimetype }),
         }),
       );
       return `${this.configService.get('spaces.cdn')}/${key}`;
     } catch (error) {
+      console.error(error);
       throw new InternalServerErrorException('File upload failed');
     }
+  }
+
+  async uploadCsv(filePath: string, folder: string): Promise<string> {
+    const fileBuffer = fs.readFileSync(filePath);
+    const fileName = path.basename(filePath);
+    const url = await this.uploadFile(fileBuffer, fileName, folder);
+    fs.unlinkSync(filePath);
+    return url;
   }
 }
