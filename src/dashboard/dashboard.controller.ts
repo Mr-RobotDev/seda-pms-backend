@@ -42,6 +42,14 @@ export class DashboardController {
     return this.dashboardService.getDashboards(account.sub);
   }
 
+  @Get(':dashboard')
+  getDashboard(
+    @CurrentUser() account: Account,
+    @Param('dashboard') dashboard: string,
+  ) {
+    return this.dashboardService.getDashboard(account.sub, dashboard);
+  }
+
   @Roles(Role.ADMIN)
   @Patch(':dashboard')
   updateDashboard(

@@ -34,6 +34,19 @@ export class DashboardService {
     return dashboards;
   }
 
+  async getDashboard(user: string, id: string) {
+    const dashboard = await this.dashboardModel.findById(id, '-createdAt');
+    if (!dashboard) {
+      throw new NotFoundException(`Dashboard ${id} not found`);
+    }
+    await this.logService.createLog(user, {
+      action: Action.VIEWED,
+      page: Page.DASHBOARD,
+      dashboard: dashboard.id,
+    });
+    return dashboard;
+  }
+
   async updateDashboard(
     id: string,
     update: UpdateQuery<Dashboard>,
