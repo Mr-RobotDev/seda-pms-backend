@@ -1,7 +1,7 @@
-export enum EventDataType {
+export enum Field {
   RELATIVE_HUMIDITY = 'relativeHumidity',
   TEMPERATURE = 'temperature',
   PRESSURE = 'pressure',
 }
 
-export const EventDataTypeValues = Object.values(EventDataType);
+export const FieldValues = Object.values(Field);

@@ -8,10 +8,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import {
-  EventDataType,
-  EventDataTypeValues,
-} from '../../event/enums/event-data-type.enum';
+import { Field, FieldValues } from '../../common/enums/field.enum';
 
 export class CreateCardDto {
   @IsString()
@@ -40,10 +37,10 @@ export class CreateCardDto {
   @Max(4)
   cols: number;
 
-  @IsIn(EventDataTypeValues)
+  @IsIn(FieldValues)
   @IsString()
   @IsNotEmpty()
-  eventDataType: EventDataType;
+  field: Field;
 
   @IsArray()
   @ArrayNotEmpty()

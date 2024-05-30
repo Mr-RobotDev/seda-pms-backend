@@ -2,10 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Device } from '../../device/schema/device.schema';
 import { Dashboard } from '../../dashboard/schema/dashboard.schema';
-import {
-  EventDataType,
-  EventDataTypeValues,
-} from '../../event/enums/event-data-type.enum';
+import { Field, FieldValues } from '../../common/enums/field.enum';
 import toJSON from '../../common/plugins/toJSON.plugin';
 import {
   paginate,
@@ -50,9 +47,9 @@ export class Card extends Document {
   @Prop({
     type: String,
     required: true,
-    enum: EventDataTypeValues,
+    enum: FieldValues,
   })
-  eventDataType: EventDataType;
+  field: Field;
 
   @Prop({
     type: [Types.ObjectId],
