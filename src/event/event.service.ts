@@ -8,6 +8,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Event } from './schema/event.schema';
 import { MediaService } from '../media/media.service';
+import { DeviceService } from '../device/device.service';
+import { UserService } from '../user/user.service';
 import { GetEventsQueryDto } from './dto/get-events.dto';
 import { Folder } from '../common/enums/folder.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
@@ -20,6 +22,8 @@ export class EventService implements OnModuleInit {
     @InjectModel(Event.name)
     private readonly eventModel: PaginatedModel<Event>,
     private readonly mediaService: MediaService,
+    private readonly deviceService: DeviceService,
+    private readonly userService: UserService,
   ) {}
 
   async onModuleInit() {
@@ -112,9 +116,14 @@ export class EventService implements OnModuleInit {
     return { results: events, totalResults: events.length };
   }
 
-  async exportEvents(query: GetEventsQueryDto): Promise<{ url: string }> {
+  async exportEvents(
+    user: string,
+    query: GetEventsQueryDto,
+  ): Promise<{ url: string }> {
     const { from, to } = query;
     const events = await this.getEvents(query);
+    const device = await this.deviceService.getDeviceByOem(query.oem);
+    const result = await this.userService.getUserById(user);
 
     const exportsDirectory = path.join(__dirname, '../../../exports');
     if (!fs.existsSync(exportsDirectory)) {
@@ -132,22 +141,29 @@ export class EventService implements OnModuleInit {
     const csvWriter = createObjectCsvWriter({
       path: filePath,
       header: [
-        { id: 'id', title: 'Id' },
-        { id: 'oem', title: 'Oem' },
-        { id: 'eventType', title: 'Event Type' },
+        { id: 'id', title: 'Event ID' },
+        { id: 'oem', title: 'Device ID' },
+        { id: 'deviceName', title: 'Device Name' },
+        { id: 'deviceType', title: 'Device Type' },
         { id: 'temperature', title: 'Temperature (°C)' },
         { id: 'relativeHumidity', title: 'Relative Humidity (%)' },
-        { id: 'createdAt', title: 'Created At' },
+        { id: 'timestamp', title: 'Timestamp' },
+        { id: 'exportedBy', title: 'Exported By' },
       ],
     });
 
     const records = events.results.map((event) => ({
       id: event.id,
       oem: event.oem,
-      eventType: event.eventType,
+      deviceName: device.name,
+      deviceType:
+        device.type === 'humidity' || device.type === 'cold'
+          ? 'Humidity/Temperature'
+          : 'Pressure',
       temperature: event.temperature,
       relativeHumidity: event.relativeHumidity,
-      createdAt: event.createdAt,
+      timestamp: event.createdAt,
+      exportedBy: `${result.user.firstName} ${result.user.lastName}`,
     }));
     await csvWriter.writeRecords(records);
 

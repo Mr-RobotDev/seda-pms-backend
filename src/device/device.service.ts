@@ -19,6 +19,10 @@ export class DeviceService {
     private readonly logService: LogService,
   ) {}
 
+  async getDeviceByOem(oem: string): Promise<Device> {
+    return this.deviceModel.findOne({ oem });
+  }
+
   async createDevice(
     user: string,
     createDeviceDto: CreateDeviceDto,

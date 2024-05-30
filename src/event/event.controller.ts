@@ -12,6 +12,8 @@ import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import { EventService } from './event.service';
 import { GetEventsQueryDto } from './dto/get-events.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Account } from '../common/interfaces/account.interface';
 
 @Controller({
   path: 'events',
@@ -44,7 +46,10 @@ export class EventController {
   }
 
   @Get('export')
-  async exportEvents(@Query() query: GetEventsQueryDto) {
-    return this.eventService.exportEvents(query);
+  async exportEvents(
+    @CurrentUser() account: Account,
+    @Query() query: GetEventsQueryDto,
+  ) {
+    return this.eventService.exportEvents(account.sub, query);
   }
 }
