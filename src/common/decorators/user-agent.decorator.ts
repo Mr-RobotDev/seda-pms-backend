@@ -9,7 +9,6 @@ export const UserAgent = createParamDecorator(
     const browser = parsed.browser.name || 'Unknown browser';
     const os = parsed.os.name || 'Unknown OS';
     const version = parsed.os.version || 'Unknown version';
-    const model = parsed.device.model || 'Unknown device';
-    return `${browser} - ${os} ${version} (${model})`;
+    return `${browser} - ${os} ${version}`;
   },
 );
