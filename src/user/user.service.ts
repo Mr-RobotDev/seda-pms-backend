@@ -81,7 +81,7 @@ export class UserService {
       {
         page,
         limit,
-        projection: '-password',
+        projection: '-password -isActive',
       },
     );
   }
