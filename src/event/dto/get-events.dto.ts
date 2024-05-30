@@ -1,4 +1,4 @@
-import { IsDate, IsNotEmpty, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ToDate } from '../../common/transformers/to-date.transformer';
 
 export class GetEventsQueryDto {
@@ -15,4 +15,8 @@ export class GetEventsQueryDto {
   @IsString()
   @IsNotEmpty()
   oem?: string;
+
+  @IsOptional()
+  @IsString()
+  eventTypes?: string;
 }

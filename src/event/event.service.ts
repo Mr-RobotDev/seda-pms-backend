@@ -13,6 +13,7 @@ import { UserService } from '../user/user.service';
 import { GetEventsQueryDto } from './dto/get-events.dto';
 import { Folder } from '../common/enums/folder.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
+import { FilterQuery, ProjectionType } from 'mongoose';
 
 @Injectable()
 export class EventService implements OnModuleInit {
@@ -102,16 +103,33 @@ export class EventService implements OnModuleInit {
   async getEvents(
     query: GetEventsQueryDto,
   ): Promise<{ results: Event[]; totalResults: number }> {
-    const { oem, from, to } = query;
+    const { oem, from, to, eventTypes } = query;
     const adjustedTo = new Date(to);
     adjustedTo.setHours(23, 59, 59, 999);
 
+    const filter: FilterQuery<Event> = {
+      ...(oem && { oem }),
+      createdAt: { $gte: from, $lte: adjustedTo },
+    };
+
+    const projection: ProjectionType<Event> = {
+      createdAt: 1,
+      oem: 1,
+      eventType: 1,
+    };
+    if (eventTypes) {
+      const eventTypesArray = eventTypes.split(',');
+      eventTypesArray.forEach((type) => {
+        projection[type] = 1;
+      });
+    } else {
+      projection.temperature = 1;
+      projection.relativeHumidity = 1;
+    }
+
     const events = await this.eventModel
-      .find({
-        ...(oem && { oem }),
-        createdAt: { $gte: from, $lte: adjustedTo },
-      })
-      .sort({ createdAt: 1 });
+      .find(filter, projection)
+      .sort({ createdAt: -1 });
 
     return { results: events, totalResults: events.length };
   }
