@@ -1,7 +1,7 @@
-export class EventDateType {
-  RELATIVE_HUMIDITY = 'relativeHumidity';
-  TEMPERATURE = 'temperature';
-  PRESSURE = 'pressure';
+export enum EventDataType {
+  RELATIVE_HUMIDITY = 'relativeHumidity',
+  TEMPERATURE = 'temperature',
+  PRESSURE = 'pressure',
 }
 
-export const EventDateTypeValues = Object.values(EventDateType);
+export const EventDataTypeValues = Object.values(EventDataType);

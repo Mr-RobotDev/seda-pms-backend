@@ -9,8 +9,8 @@ import {
   Min,
 } from 'class-validator';
 import {
-  EventDateType,
-  EventDateTypeValues,
+  EventDataType,
+  EventDataTypeValues,
 } from '../../event/enums/event-data-type.enum';
 
 export class CreateCardDto {
@@ -40,9 +40,10 @@ export class CreateCardDto {
   @Max(4)
   cols: number;
 
+  @IsIn(EventDataTypeValues)
   @IsString()
-  @IsIn(EventDateTypeValues)
-  eventDataType: EventDateType;
+  @IsNotEmpty()
+  eventDataType: EventDataType;
 
   @IsArray()
   @ArrayNotEmpty()

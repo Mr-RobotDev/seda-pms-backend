@@ -3,8 +3,8 @@ import { Document, Types } from 'mongoose';
 import { Device } from '../../device/schema/device.schema';
 import { Dashboard } from '../../dashboard/schema/dashboard.schema';
 import {
-  EventDateType,
-  EventDateTypeValues,
+  EventDataType,
+  EventDataTypeValues,
 } from '../../event/enums/event-data-type.enum';
 import toJSON from '../../common/plugins/toJSON.plugin';
 import {
@@ -50,9 +50,9 @@ export class Card extends Document {
   @Prop({
     type: String,
     required: true,
-    enum: EventDateTypeValues,
+    enum: EventDataTypeValues,
   })
-  type: EventDateType;
+  eventDataType: EventDataType;
 
   @Prop({
     type: [Types.ObjectId],
