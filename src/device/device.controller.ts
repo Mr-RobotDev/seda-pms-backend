@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { IsObjectIdPipe } from 'nestjs-object-id';
 import { DeviceService } from './device.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
@@ -50,7 +51,10 @@ export class DeviceController {
   }
 
   @Get(':device')
-  device(@CurrentUser() account: Account, @Param('device') device: string) {
+  device(
+    @CurrentUser() account: Account,
+    @Param('device', IsObjectIdPipe) device: string,
+  ) {
     return this.deviceService.device(account.sub, device);
   }
 
@@ -58,7 +62,7 @@ export class DeviceController {
   @Patch(':device')
   updateDevice(
     @CurrentUser() account: Account,
-    @Param('device') device: string,
+    @Param('device', IsObjectIdPipe) device: string,
     @Body() updateDeviceDto: UpdateDeviceDto,
   ) {
     return this.deviceService.updateDevice(
@@ -72,7 +76,7 @@ export class DeviceController {
   @Delete(':device')
   removeDevice(
     @CurrentUser() account: Account,
-    @Param('device') device: string,
+    @Param('device', IsObjectIdPipe) device: string,
   ) {
     return this.deviceService.removeDevice(account.sub, device);
   }

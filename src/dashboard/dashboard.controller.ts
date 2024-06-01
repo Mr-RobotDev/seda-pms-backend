@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { IsObjectIdPipe } from 'nestjs-object-id';
 import { DashboardService } from './dashboard.service';
 import { CreateDashboardDto } from './dto/create-dashboard.dto';
 import { UpdateDashboardDto } from './dto/update-dashboard.dto';
@@ -45,7 +46,7 @@ export class DashboardController {
   @Get(':dashboard')
   getDashboard(
     @CurrentUser() account: Account,
-    @Param('dashboard') dashboard: string,
+    @Param('dashboard', IsObjectIdPipe) dashboard: string,
   ) {
     return this.dashboardService.getDashboard(account.sub, dashboard);
   }
@@ -54,7 +55,7 @@ export class DashboardController {
   @Patch(':dashboard')
   updateDashboard(
     @CurrentUser() account: Account,
-    @Param('dashboard') dashboard: string,
+    @Param('dashboard', IsObjectIdPipe) dashboard: string,
     @Body() updateDashboardDto: UpdateDashboardDto,
   ) {
     return this.dashboardService.updateDashboard(
@@ -68,7 +69,7 @@ export class DashboardController {
   @Delete(':dashboard')
   remove(
     @CurrentUser() account: Account,
-    @Param('dashboard') dashboard: string,
+    @Param('dashboard', IsObjectIdPipe) dashboard: string,
   ) {
     return this.dashboardService.removeDashboard(account.sub, dashboard);
   }

@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { IsObjectIdPipe } from 'nestjs-object-id';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -23,26 +24,29 @@ export class CardController {
   @Post()
   @HttpCode(HttpStatus.OK)
   createCard(
-    @Param('dashboard') dashboard: string,
+    @Param('dashboard', IsObjectIdPipe, IsObjectIdPipe) dashboard: string,
     @Body() createCardDto: CreateCardDto,
   ) {
     return this.cardService.createCard(dashboard, createCardDto);
   }
 
   @Get()
-  cards(@Param('dashboard') dashboard: string) {
+  cards(@Param('dashboard', IsObjectIdPipe) dashboard: string) {
     return this.cardService.cards(dashboard);
   }
 
   @Get(':card')
-  card(@Param('dashboard') dashboard: string, @Param('card') card: string) {
+  card(
+    @Param('dashboard', IsObjectIdPipe) dashboard: string,
+    @Param('card', IsObjectIdPipe) card: string,
+  ) {
     return this.cardService.card(dashboard, card);
   }
 
   @Patch(':card')
   updateCard(
-    @Param('dashboard') dashboard: string,
-    @Param('card') card: string,
+    @Param('dashboard', IsObjectIdPipe) dashboard: string,
+    @Param('card', IsObjectIdPipe) card: string,
     @Body() updateCardDto: UpdateCardDto,
   ) {
     return this.cardService.updateCard(dashboard, card, updateCardDto);
@@ -50,8 +54,8 @@ export class CardController {
 
   @Delete(':card')
   removeCard(
-    @Param('dashboard') dashboard: string,
-    @Param('card') card: string,
+    @Param('dashboard', IsObjectIdPipe) dashboard: string,
+    @Param('card', IsObjectIdPipe) card: string,
   ) {
     return this.cardService.removeCard(dashboard, card);
   }

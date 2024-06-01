@@ -26,6 +26,7 @@ import { Account } from '../common/interfaces/account.interface';
 import { ImageUploadPipe } from '../common/pipes/image.pipe';
 import { Role } from '../common/enums/role.enum';
 import { Folder } from '../common/enums/folder.enum';
+import { IsObjectIdPipe } from 'nestjs-object-id';
 
 @Controller({
   path: 'users',
@@ -58,7 +59,7 @@ export class UserController {
   @Roles(Role.ADMIN)
   @Patch(':user/update-role')
   updateUserRole(
-    @Param('user') user: string,
+    @Param('user', IsObjectIdPipe) user: string,
     @Body() updateUserRoleDto: UpdateUserRoleDto,
   ) {
     return this.userService.updateUserRole(user, updateUserRoleDto.role);
