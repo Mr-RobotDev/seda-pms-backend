@@ -15,7 +15,7 @@ export class CardService {
   ) {}
 
   async createCard(dashboard: string, createCardDto: CreateCardDto) {
-    const card = await this.cardModel.create({
+    const newCard = await this.cardModel.create({
       ...createCardDto,
       dashboard,
     });
@@ -25,6 +25,7 @@ export class CardService {
         devicesCount: createCardDto.devices.length,
       },
     });
+    const card = await this.card(dashboard, newCard.id);
     return card;
   }
 
