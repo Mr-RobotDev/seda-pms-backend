@@ -1,14 +1,14 @@
 import {
   ArrayNotEmpty,
   IsArray,
-  IsIn,
   IsInt,
   IsNotEmpty,
   IsString,
   Max,
   Min,
 } from 'class-validator';
-import { Field, FieldValues } from '../../common/enums/field.enum';
+import { Field } from '../../common/enums/field.enum';
+import { IsField } from '../validators/is-field.validator';
 
 export class CreateCardDto {
   @IsString()
@@ -37,7 +37,7 @@ export class CreateCardDto {
   @Max(4)
   cols: number;
 
-  @IsIn(FieldValues)
+  @IsField()
   @IsString()
   @IsNotEmpty()
   field: Field;
