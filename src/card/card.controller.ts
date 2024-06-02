@@ -13,6 +13,8 @@ import { IsObjectIdPipe } from 'nestjs-object-id';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/role.enum';
 
 @Controller({
   path: 'dashboards/:dashboard/cards',
@@ -21,6 +23,7 @@ import { UpdateCardDto } from './dto/update-card.dto';
 export class CardController {
   constructor(private readonly cardService: CardService) {}
 
+  @Roles(Role.ADMIN)
   @Post()
   @HttpCode(HttpStatus.OK)
   createCard(
@@ -43,6 +46,8 @@ export class CardController {
     return this.cardService.card(dashboard, card);
   }
 
+  @Roles(Role.ADMIN)
+  @Post()
   @Patch(':card')
   updateCard(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
@@ -52,6 +57,8 @@ export class CardController {
     return this.cardService.updateCard(dashboard, card, updateCardDto);
   }
 
+  @Roles(Role.ADMIN)
+  @Post()
   @Delete(':card')
   removeCard(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CardService } from './card.service';
 import { CardController } from './card.controller';
@@ -13,9 +13,10 @@ import { DashboardModule } from '../dashboard/dashboard.module';
         schema: CardSchema,
       },
     ]),
-    DashboardModule,
+    forwardRef(() => DashboardModule),
   ],
   controllers: [CardController],
   providers: [CardService],
+  exports: [CardService],
 })
 export class CardModule {}

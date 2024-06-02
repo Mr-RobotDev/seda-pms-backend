@@ -4,6 +4,7 @@ import { DashboardService } from './dashboard.service';
 import { DashboardController } from './dashboard.controller';
 import { Dashboard, DashboardSchema } from './schema/dashboard.schema';
 import { LogModule } from '../log/log.module';
+import { CardModule } from '../card/card.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { LogModule } from '../log/log.module';
       },
     ]),
     LogModule,
+    CardModule,
   ],
   controllers: [DashboardController],
   providers: [DashboardService],

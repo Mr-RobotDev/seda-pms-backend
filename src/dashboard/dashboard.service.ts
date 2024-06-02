@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, UpdateQuery } from 'mongoose';
 import { Dashboard } from './schema/dashboard.schema';
 import { LogService } from '../log/log.service';
+import { CardService } from '../card/card.service';
 import { CreateDashboardDto } from './dto/create-dashboard.dto';
 import { Action } from '../log/enums/action.enum';
 import { Page } from '../log/enums/page.enum';
@@ -12,6 +18,8 @@ export class DashboardService {
   constructor(
     @InjectModel(Dashboard.name)
     private readonly dashboardModel: Model<Dashboard>,
+    @Inject(forwardRef(() => CardService))
+    private readonly cardService: CardService,
     private readonly logService: LogService,
   ) {}
 
@@ -76,6 +84,7 @@ export class DashboardService {
     if (!dashboard) {
       throw new NotFoundException(`Dashboard ${id} not found`);
     }
+    await this.cardService.removeCardsByDashboard(id);
     await this.logService.createLog(user, {
       action: Action.DELETED,
       page: Page.DASHBOARD,

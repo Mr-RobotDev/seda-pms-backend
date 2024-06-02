@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Card } from './schema/card.schema';
@@ -11,8 +16,15 @@ export class CardService {
   constructor(
     @InjectModel(Card.name)
     private readonly cardModel: Model<Card>,
+    @Inject(forwardRef(() => DashboardService))
     private readonly dashboardService: DashboardService,
   ) {}
+
+  async removeCardsByDashboard(dashboard: string) {
+    await this.cardModel.deleteMany({
+      dashboard,
+    });
+  }
 
   async createCard(dashboard: string, createCardDto: CreateCardDto) {
     const newCard = await this.cardModel.create({
