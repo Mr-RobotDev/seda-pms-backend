@@ -27,7 +27,7 @@ export class CardController {
   @Post()
   @HttpCode(HttpStatus.OK)
   createCard(
-    @Param('dashboard', IsObjectIdPipe, IsObjectIdPipe) dashboard: string,
+    @Param('dashboard', IsObjectIdPipe) dashboard: string,
     @Body() createCardDto: CreateCardDto,
   ) {
     return this.cardService.createCard(dashboard, createCardDto);
