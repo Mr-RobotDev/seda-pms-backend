@@ -2,6 +2,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from '../config/configuration';
 import { AppController } from './app.controller';
@@ -35,8 +36,9 @@ import { CardModule } from './card/card.module';
     }),
     CacheModule.register({
       ttl: 3600,
-      max: 50,
+      max: 100,
     }),
+    ScheduleModule.forRoot(),
     MediaModule,
     UserModule,
     AuthModule,

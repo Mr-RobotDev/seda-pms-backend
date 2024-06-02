@@ -1,0 +1,56 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
+import { IsObjectIdPipe } from 'nestjs-object-id';
+import { AlertService } from './alert.service';
+import { CreateAlertDto } from './dto/create-alert.dto';
+import { UpdateAlertDto } from './dto/update-alert.dto';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/role.enum';
+
+@Controller({
+  path: 'alerts',
+  version: '1',
+})
+export class AlertController {
+  constructor(private readonly alertService: AlertService) {}
+
+  @Roles(Role.ADMIN)
+  @Post()
+  createAlert(@Body() createAlertDto: CreateAlertDto) {
+    return this.alertService.createAlert(createAlertDto);
+  }
+
+  @Get()
+  alerts(@Query() query: PaginationQueryDto) {
+    return this.alertService.alerts(query);
+  }
+
+  @Get(':alert')
+  alert(@Param('alert', IsObjectIdPipe) alert: string) {
+    return this.alertService.alert(alert);
+  }
+
+  @Roles(Role.ADMIN)
+  @Patch(':alert')
+  updateAlert(
+    @Param('alert', IsObjectIdPipe) alert: string,
+    @Body() updateAlertDto: UpdateAlertDto,
+  ) {
+    return this.alertService.updateAlert(alert, updateAlertDto);
+  }
+
+  @Roles(Role.ADMIN)
+  @Delete(':alert')
+  removeAlert(@Param('alert', IsObjectIdPipe) alert: string) {
+    return this.alertService.removeAlert(alert);
+  }
+}
