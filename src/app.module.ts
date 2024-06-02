@@ -19,6 +19,7 @@ import { DeviceModule } from './device/device.module';
 import { LogModule } from './log/log.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { CardModule } from './card/card.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { CardModule } from './card/card.module';
     LogModule,
     DashboardModule,
     CardModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [
