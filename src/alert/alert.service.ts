@@ -26,7 +26,7 @@ export class AlertService {
   async alert(id: string): Promise<Alert> {
     const alert = await this.alertModel.findById(id);
     if (!alert) {
-      throw new NotFoundException(`Alert ${id} not found`);
+      throw new NotFoundException(`Alert #${id} not found`);
     }
     return alert;
   }
@@ -43,7 +43,7 @@ export class AlertService {
       },
     );
     if (!updatedAlert) {
-      throw new NotFoundException(`Alert ${id} not found`);
+      throw new NotFoundException(`Alert #${id} not found`);
     }
     return updatedAlert;
   }
@@ -51,7 +51,7 @@ export class AlertService {
   async removeAlert(id: string): Promise<void> {
     const result = await this.alertModel.findByIdAndDelete(id);
     if (!result) {
-      throw new NotFoundException(`Alert ${id} not found`);
+      throw new NotFoundException(`Alert #${id} not found`);
     }
   }
 }
