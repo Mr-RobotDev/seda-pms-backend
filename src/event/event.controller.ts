@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Query,
-  Res,
-  Sse,
-} from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Query, Sse } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 import { EventService } from './event.service';
 import { GetEventsQueryDto } from './dto/get-events.dto';
@@ -27,17 +17,6 @@ export class EventController {
     return this.eventService
       .getChangeStream(oem)
       .pipe(map((change) => ({ data: change })));
-  }
-
-  @Post('stream')
-  @HttpCode(HttpStatus.OK)
-  getEventStream(@Res() res: Response, @Query('oem') oem?: string): void {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    res.flushHeaders();
-    this.eventService.getEventStream(res, oem);
   }
 
   @Get()

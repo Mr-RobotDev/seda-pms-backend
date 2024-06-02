@@ -1,6 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Response } from 'express';
 import { filter, map, Observable, Subject } from 'rxjs';
 import { createObjectCsvWriter } from 'csv-writer';
 import { format } from 'date-fns';
@@ -46,41 +45,6 @@ export class EventService implements OnModuleInit {
         id: change.fullDocument._id,
       })),
     );
-  }
-
-  getEventStream(res: Response, oem?: string): void {
-    const pipeline = [];
-
-    if (oem) {
-      pipeline.push({
-        $match: { 'fullDocument.oem': oem },
-      });
-    }
-
-    const changeStream = this.eventModel.watch(pipeline);
-
-    changeStream.on('change', (change) => {
-      if (change.operationType === 'insert' && change.fullDocument) {
-        const formattedDocument = {
-          oem: change.fullDocument.oem,
-          eventType: change.fullDocument.eventType,
-          temperature: change.fullDocument.temperature,
-          relativeHumidity: change.fullDocument.relativeHumidity,
-          createdAt: change.fullDocument.createdAt,
-          id: change.fullDocument._id,
-        };
-        res.write(`data: ${JSON.stringify(formattedDocument)}\n\n`);
-      }
-    });
-
-    changeStream.on('error', (error) => {
-      console.error(error);
-    });
-
-    res.on('close', () => {
-      changeStream.close();
-      res.end();
-    });
   }
 
   createEvent(
