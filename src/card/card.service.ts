@@ -50,7 +50,7 @@ export class CardService {
       {
         populate: {
           path: 'devices',
-          select: 'name oem',
+          select: 'name type oem',
         },
       },
     );
