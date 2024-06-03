@@ -1,14 +1,14 @@
-import { IsIn, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
-import { Action, ActionValues } from '../enums/action.enum';
-import { Page, PageValues } from '../enums/page.enum';
+import { IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
+import { Action } from '../enums/action.enum';
+import { Page } from '../enums/page.enum';
 
 export class CreateLogDto {
-  @IsIn(ActionValues)
+  @IsEnum(Action)
   @IsString()
   @IsNotEmpty()
   action: Action;
 
-  @IsIn(PageValues)
+  @IsEnum(Action)
   @IsString()
   page?: Page;
 
