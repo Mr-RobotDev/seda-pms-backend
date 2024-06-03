@@ -8,6 +8,7 @@ import {
 } from '../../common/plugins/pagination.plugin';
 import { ScheduleType, ScheduleTypeValues } from '../enums/schedule-type.enum';
 import { CustomDay, CustomDayValues } from '../enums/custom-day.enum';
+import { TimeFrame } from '../enums/timeframe.enum';
 
 @Schema({
   timestamps: true,
@@ -23,13 +24,7 @@ export class Report extends Document {
     type: String,
     required: true,
   })
-  from: string;
-
-  @Prop({
-    type: String,
-    required: true,
-  })
-  to: string;
+  timeFrame: TimeFrame;
 
   @Prop({
     type: [String],
