@@ -1,7 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { format } from 'date-fns';
+import {
+  format,
+  subDays,
+  startOfWeek,
+  endOfWeek,
+  subWeeks,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Report } from './schema/report.schema';
@@ -13,6 +21,7 @@ import { UpdateReportDto } from './dto/update-report.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { CustomDay } from './enums/custom-day.enum';
 import { ScheduleType } from './enums/schedule-type.enum';
+import { TimeFrame } from './enums/timeframe.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
 
@@ -40,22 +49,23 @@ export class ReportService {
 
     for (const report of reports) {
       if (this.shouldSendReport(report, currentDay, currentTime)) {
+        const { from, to } = this.getTimeFrameRange(report.timeFrame);
         const cards = await this.cardService.cards(report.dashboard.id);
         for (const card of cards) {
           for (const device of card.devices) {
             const events = await this.eventService.getEvents({
               oem: device.oem,
               eventTypes: card.field,
-              from: new Date(report.from),
-              to: new Date(report.to),
+              from,
+              to,
             });
 
             if (events.length > 0) {
               const filePath = await this.eventService.getFilePath(
                 events,
                 device,
-                new Date(report.from),
-                new Date(report.to),
+                from,
+                to,
               );
               const attachment = {
                 filename: path.basename(filePath),
@@ -66,8 +76,8 @@ export class ReportService {
                 report.recipients,
                 [attachment],
                 report.dashboard.name,
-                report.from,
-                report.to,
+                from,
+                to,
               );
             }
           }
@@ -91,6 +101,34 @@ export class ReportService {
       return report.times.includes(currentTime);
     }
     return false;
+  }
+
+  getTimeFrameRange(timeFrame: TimeFrame): { from: Date; to: Date } {
+    const now = new Date();
+    switch (timeFrame) {
+      case TimeFrame.TODAY:
+        return { from: startOfDay(now), to: endOfDay(now) };
+      case TimeFrame.YESTERDAY:
+        return {
+          from: startOfDay(subDays(now, 1)),
+          to: endOfDay(subDays(now, 1)),
+        };
+      case TimeFrame.THIS_WEEK:
+        return { from: startOfWeek(now), to: now };
+      case TimeFrame.LAST_WEEK:
+        return {
+          from: startOfWeek(subWeeks(now, 1)),
+          to: endOfWeek(subWeeks(now, 1)),
+        };
+      case TimeFrame.LAST_3_DAYS:
+        return { from: subDays(now, 3), to: now };
+      case TimeFrame.LAST_7_DAYS:
+        return { from: subDays(now, 7), to: now };
+      case TimeFrame.LAST_30_DAYS:
+        return { from: subDays(now, 30), to: now };
+      default:
+        throw new Error(`Unsupported time frame: ${timeFrame}`);
+    }
   }
 
   async createReport(
