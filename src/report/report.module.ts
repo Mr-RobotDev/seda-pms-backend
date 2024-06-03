@@ -3,6 +3,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ReportService } from './report.service';
 import { ReportController } from './report.controller';
 import { Report, ReportSchema } from './schema/report.schema';
+import { CommonModule } from '../common/common.module';
+import { CardModule } from '../card/card.module';
+import { EventModule } from '../event/event.module';
 
 @Module({
   imports: [
@@ -12,6 +15,9 @@ import { Report, ReportSchema } from './schema/report.schema';
         schema: ReportSchema,
       },
     ]),
+    CommonModule,
+    CardModule,
+    EventModule,
   ],
   controllers: [ReportController],
   providers: [ReportService],
