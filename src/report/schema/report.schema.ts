@@ -7,7 +7,7 @@ import {
   paginatedAggregation,
 } from '../../common/plugins/pagination.plugin';
 import { ScheduleType, ScheduleTypeValues } from '../enums/schedule-type.enum';
-import { CustomDay, CustomDayValues } from '../enums/custom-day.enum';
+import { WeekDay, WeekDayValues } from '../enums/week-day.enum';
 import { TimeFrame } from '../enums/timeframe.enum';
 
 @Schema({
@@ -24,7 +24,7 @@ export class Report extends Document {
     type: String,
     required: true,
   })
-  timeFrame: TimeFrame;
+  timeframe: TimeFrame;
 
   @Prop({
     type: [String],
@@ -33,7 +33,7 @@ export class Report extends Document {
   recipients: string[];
 
   @Prop({
-    type: Number,
+    type: String,
     required: true,
     enum: ScheduleTypeValues,
   })
@@ -55,12 +55,12 @@ export class Report extends Document {
 
   @Prop({
     type: [String],
-    enum: CustomDayValues,
+    enum: WeekDayValues,
     required: function () {
-      return this.scheduleType === 'custom';
+      return this.scheduleType === ScheduleType.CUSTOM;
     },
   })
-  customDays: CustomDay[];
+  weekdays: WeekDay[];
 
   @Prop({
     type: [String],

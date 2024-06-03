@@ -43,7 +43,6 @@ export class MediaService {
       );
       return `${this.configService.get('spaces.cdn')}/${key}`;
     } catch (error) {
-      console.error(error);
       throw new InternalServerErrorException('File upload failed');
     }
   }

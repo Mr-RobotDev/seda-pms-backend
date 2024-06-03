@@ -10,7 +10,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { ScheduleType } from '../enums/schedule-type.enum';
-import { CustomDay } from '../enums/custom-day.enum';
+import { WeekDay } from '../enums/week-day.enum';
 import { TimeFrame } from '../enums/timeframe.enum';
 
 export class CreateReportDto {
@@ -20,7 +20,7 @@ export class CreateReportDto {
 
   @IsEnum(TimeFrame)
   @IsNotEmpty()
-  timeFrame: TimeFrame;
+  timeframe: TimeFrame;
 
   @IsArray()
   @ArrayNotEmpty()
@@ -36,8 +36,8 @@ export class CreateReportDto {
   @IsArray()
   @ArrayNotEmpty()
   @ArrayUnique()
-  @IsEnum(CustomDay, { each: true })
-  customDays: CustomDay[];
+  @IsEnum(WeekDay, { each: true })
+  weekdays: WeekDay[];
 
   @IsArray()
   @ArrayNotEmpty()

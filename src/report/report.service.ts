@@ -19,7 +19,7 @@ import { EventService } from '../event/event.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
-import { CustomDay } from './enums/custom-day.enum';
+import { WeekDay } from './enums/week-day.enum';
 import { ScheduleType } from './enums/schedule-type.enum';
 import { TimeFrame } from './enums/timeframe.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
@@ -35,9 +35,9 @@ export class ReportService {
     private readonly eventService: EventService,
   ) {}
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async sendReports() {
-    const currentDay = format(new Date(), 'EEEE').toLowerCase() as CustomDay;
+    const currentDay = format(new Date(), 'EEEE').toLowerCase() as WeekDay;
     const currentTime = format(new Date(), 'HH:mm');
 
     const reports = await this.reportModel.find({ enabled: true }, null, {
@@ -49,7 +49,7 @@ export class ReportService {
 
     for (const report of reports) {
       if (this.shouldSendReport(report, currentDay, currentTime)) {
-        const { from, to } = this.getTimeFrameRange(report.timeFrame);
+        const { from, to } = this.getTimeFrameRange(report.timeframe);
         const cards = await this.cardService.cards(report.dashboard.id);
         for (const card of cards) {
           for (const device of card.devices) {
@@ -72,12 +72,13 @@ export class ReportService {
                 content: fs.readFileSync(filePath).toString('base64'),
               };
 
+              const timeframe = `from ${format(from, 'MMMM d, yyyy')} to ${format(to, 'MMMM d, yyyy')}`;
+
               await this.mailService.sendDashboardReport(
                 report.recipients,
                 [attachment],
                 report.dashboard.name,
-                from,
-                to,
+                timeframe,
               );
             }
           }
@@ -88,24 +89,24 @@ export class ReportService {
 
   shouldSendReport(
     report: Report,
-    currentDay: CustomDay,
+    currentDay: WeekDay,
     currentTime: string,
   ): boolean {
     if (
       report.scheduleType === ScheduleType.EVERYDAY ||
       (report.scheduleType === ScheduleType.WEEKDAYS &&
-        ![CustomDay.SATURDAY, CustomDay.SUNDAY].includes(currentDay)) ||
+        ![WeekDay.SATURDAY, WeekDay.SUNDAY].includes(currentDay)) ||
       (report.scheduleType === ScheduleType.CUSTOM &&
-        report.customDays.includes(currentDay))
+        report.weekdays.includes(currentDay))
     ) {
       return report.times.includes(currentTime);
     }
     return false;
   }
 
-  getTimeFrameRange(timeFrame: TimeFrame): { from: Date; to: Date } {
+  getTimeFrameRange(timeframe: TimeFrame): { from: Date; to: Date } {
     const now = new Date();
-    switch (timeFrame) {
+    switch (timeframe) {
       case TimeFrame.TODAY:
         return { from: startOfDay(now), to: endOfDay(now) };
       case TimeFrame.YESTERDAY:
@@ -127,7 +128,7 @@ export class ReportService {
       case TimeFrame.LAST_30_DAYS:
         return { from: subDays(now, 30), to: now };
       default:
-        throw new Error(`Unsupported time frame: ${timeFrame}`);
+        throw new Error(`Unsupported time frame: ${timeframe}`);
     }
   }
 

@@ -1,4 +1,4 @@
-export enum CustomDay {
+export enum WeekDay {
   MONDAY = 'monday',
   TUESDAY = 'tuesday',
   WEDNESDAY = 'wednesday',
@@ -8,4 +8,4 @@ export enum CustomDay {
   SUNDAY = 'sunday',
 }
 
-export const CustomDayValues = Object.values(CustomDay);
+export const WeekDayValues = Object.values(WeekDay);

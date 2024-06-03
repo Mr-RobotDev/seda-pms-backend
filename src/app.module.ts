@@ -20,6 +20,7 @@ import { LogModule } from './log/log.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { CardModule } from './card/card.module';
 import { ReportModule } from './report/report.module';
+import { AlertModule } from './alert/alert.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ReportModule } from './report/report.module';
     LogModule,
     DashboardModule,
     CardModule,
+    AlertModule,
     ReportModule,
   ],
   controllers: [AppController],

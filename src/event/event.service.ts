@@ -112,7 +112,7 @@ export class EventService implements OnModuleInit {
 
     const filePath = path.join(
       exportsDirectory,
-      `Events (${formattedFrom} - ${formattedTo}).csv`,
+      `Events - ${device.name} (${formattedFrom} - ${formattedTo}).csv`,
     );
 
     const csvWriter = createObjectCsvWriter({
@@ -125,7 +125,7 @@ export class EventService implements OnModuleInit {
         { id: 'temperature', title: 'Temperature (°C)' },
         { id: 'relativeHumidity', title: 'Relative Humidity (%)' },
         { id: 'timestamp', title: 'Timestamp' },
-        ...(user && [{ id: 'exportedBy', title: 'Exported By' }]),
+        ...(user ? [{ id: 'exportedBy', title: 'Exported By' }] : []),
       ],
     });
 

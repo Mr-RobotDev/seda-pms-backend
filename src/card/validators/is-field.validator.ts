@@ -10,11 +10,7 @@ import { Field, FieldValues } from '../../common/enums/field.enum';
 class IsFieldConstraint implements ValidatorConstraintInterface {
   validate(fields: any) {
     if (typeof fields !== 'string') return false;
-
     const fieldArray = fields.split(',').map((field) => field.trim());
-    console.log(fieldArray);
-    console.log(FieldValues);
-
     return fieldArray.every((field) => FieldValues.includes(field as Field));
   }
 

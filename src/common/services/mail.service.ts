@@ -13,8 +13,7 @@ export class MailService {
     emails: string[],
     attachments: AttachmentData[],
     dashboard_name: string,
-    from: Date,
-    to: Date,
+    timeframe: string,
   ): Promise<boolean> {
     try {
       const promises = emails.map((email) => {
@@ -23,12 +22,11 @@ export class MailService {
           from: `Origin Smart Controls <${this.configService.get<string>('sendgrid.from')}>`,
           dynamicTemplateData: {
             dashboard_name,
-            from,
-            to,
+            timeframe,
           },
           attachments,
           templateId: this.configService.get<string>(
-            'sendgrid.verifyEmailTemplate',
+            'sendgrid.dashboardReportTemplate',
           ),
         };
         return sendGrid.send(mail);
