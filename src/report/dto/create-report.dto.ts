@@ -11,19 +11,16 @@ import {
 } from 'class-validator';
 import { ScheduleType } from '../enums/schedule-type.enum';
 import { CustomDay } from '../enums/custom-day.enum';
+import { TimeFrame } from '../enums/timeframe.enum';
 
 export class CreateReportDto {
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsMilitaryTime()
+  @IsEnum(TimeFrame)
   @IsNotEmpty()
-  from?: Date;
-
-  @IsMilitaryTime()
-  @IsNotEmpty()
-  to?: Date;
+  timeFrame: TimeFrame;
 
   @IsArray()
   @ArrayNotEmpty()
