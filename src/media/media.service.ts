@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { S3, PutObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
-import * as fs from 'fs';
 
 @Injectable()
 export class MediaService {
@@ -47,13 +46,5 @@ export class MediaService {
       console.error(error);
       throw new InternalServerErrorException('File upload failed');
     }
-  }
-
-  async uploadCsv(filePath: string, folder: string): Promise<string> {
-    const fileBuffer = fs.readFileSync(filePath);
-    const fileName = path.basename(filePath);
-    const url = await this.uploadFile(fileBuffer, fileName, folder);
-    fs.unlinkSync(filePath);
-    return url;
   }
 }
