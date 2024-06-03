@@ -29,6 +29,6 @@ export class EventController {
     @CurrentUser() account: Account,
     @Query() query: GetEventsQueryDto,
   ) {
-    return this.eventService.exportEvents(account.sub, query);
+    return this.eventService.exportEvents(query, account.sub);
   }
 }

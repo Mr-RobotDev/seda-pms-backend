@@ -1,18 +1,21 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { FilterQuery, ProjectionType } from 'mongoose';
 import { filter, map, Observable, Subject } from 'rxjs';
 import { createObjectCsvWriter } from 'csv-writer';
 import { format } from 'date-fns';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Event } from './schema/event.schema';
+import { Device } from '../device/schema/device.schema';
+import { User } from '../user/schema/user.schema';
 import { MediaService } from '../media/media.service';
 import { DeviceService } from '../device/device.service';
 import { UserService } from '../user/user.service';
 import { GetEventsQueryDto } from './dto/get-events.dto';
 import { Folder } from '../common/enums/folder.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
-import { FilterQuery, ProjectionType } from 'mongoose';
+import { PartialUser } from '../user/types/partial-user.type';
 
 @Injectable()
 export class EventService implements OnModuleInit {
@@ -64,9 +67,7 @@ export class EventService implements OnModuleInit {
     });
   }
 
-  async getEvents(
-    query: GetEventsQueryDto,
-  ): Promise<{ results: Event[]; totalResults: number }> {
+  async getEvents(query: GetEventsQueryDto): Promise<Event[]> {
     const { oem, from, to, eventTypes } = query;
     const adjustedTo = new Date(to);
     adjustedTo.setHours(23, 59, 59, 999);
@@ -91,22 +92,16 @@ export class EventService implements OnModuleInit {
       projection.relativeHumidity = 1;
     }
 
-    const events = await this.eventModel
-      .find(filter, projection)
-      .sort({ createdAt: -1 });
-
-    return { results: events, totalResults: events.length };
+    return this.eventModel.find(filter, projection).sort({ createdAt: -1 });
   }
 
-  async exportEvents(
-    user: string,
-    query: GetEventsQueryDto,
-  ): Promise<{ url: string }> {
-    const { from, to } = query;
-    const events = await this.getEvents(query);
-    const device = await this.deviceService.getDeviceByOem(query.oem);
-    const result = await this.userService.getUserById(user);
-
+  async getFilePath(
+    events: Event[],
+    device: Device,
+    from: Date,
+    to: Date,
+    user?: Partial<User>,
+  ): Promise<string> {
     const exportsDirectory = path.join(__dirname, '../../../exports');
     if (!fs.existsSync(exportsDirectory)) {
       fs.mkdirSync(exportsDirectory, { recursive: true });
@@ -130,11 +125,11 @@ export class EventService implements OnModuleInit {
         { id: 'temperature', title: 'Temperature (°C)' },
         { id: 'relativeHumidity', title: 'Relative Humidity (%)' },
         { id: 'timestamp', title: 'Timestamp' },
-        { id: 'exportedBy', title: 'Exported By' },
+        ...(user && [{ id: 'exportedBy', title: 'Exported By' }]),
       ],
     });
 
-    const records = events.results.map((event) => ({
+    const records = events.map((event) => ({
       id: event.id,
       oem: event.oem,
       deviceName: device.name,
@@ -145,11 +140,41 @@ export class EventService implements OnModuleInit {
       temperature: event.temperature,
       relativeHumidity: event.relativeHumidity,
       timestamp: event.createdAt,
-      exportedBy: `${result.user.firstName} ${result.user.lastName}`,
+      ...(user && {
+        exportedBy: `${user.firstName} ${user.lastName}`,
+      }),
     }));
     await csvWriter.writeRecords(records);
 
-    const url = await this.mediaService.uploadCsv(filePath, Folder.EXPORTS);
+    return filePath;
+  }
+
+  async exportEvents(query: GetEventsQueryDto, user?: string) {
+    const { from, to } = query;
+    const events = await this.getEvents(query);
+    const device = await this.deviceService.getDeviceByOem(query.oem);
+    let result: PartialUser;
+    if (user) {
+      result = await this.userService.getUserById(user);
+    }
+
+    const filePath = await this.getFilePath(
+      events,
+      device,
+      from,
+      to,
+      result.user,
+    );
+
+    const fileBuffer = fs.readFileSync(filePath);
+    const fileName = path.basename(filePath);
+
+    const url = await this.mediaService.uploadFile(
+      fileBuffer,
+      fileName,
+      Folder.EXPORTS,
+    );
+    fs.unlinkSync(filePath);
     return { url };
   }
 }
