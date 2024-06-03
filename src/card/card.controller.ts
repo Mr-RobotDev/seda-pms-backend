@@ -47,7 +47,6 @@ export class CardController {
   }
 
   @Roles(Role.ADMIN)
-  @Post()
   @Patch(':card')
   updateCard(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
@@ -58,7 +57,6 @@ export class CardController {
   }
 
   @Roles(Role.ADMIN)
-  @Post()
   @Delete(':card')
   removeCard(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
