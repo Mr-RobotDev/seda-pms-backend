@@ -3,16 +3,27 @@ import {
   ArrayUnique,
   IsArray,
   IsEmail,
-  IsInt,
+  IsEnum,
   IsNotEmpty,
   IsString,
-  Min,
+  IsMilitaryTime,
+  ValidateIf,
 } from 'class-validator';
+import { ScheduleType } from '../enums/schedule-type.enum';
+import { CustomDay } from '../enums/custom-day.enum';
 
 export class CreateReportDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsMilitaryTime()
+  @IsNotEmpty()
+  from?: Date;
+
+  @IsMilitaryTime()
+  @IsNotEmpty()
+  to?: Date;
 
   @IsArray()
   @ArrayNotEmpty()
@@ -20,8 +31,20 @@ export class CreateReportDto {
   @IsEmail({}, { each: true })
   recipients: string[];
 
-  @IsInt()
+  @IsEnum(ScheduleType)
   @IsNotEmpty()
-  @Min(1)
-  frequency: number;
+  scheduleType: ScheduleType;
+
+  @ValidateIf((o) => o.scheduleType === ScheduleType.CUSTOM)
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsEnum(CustomDay, { each: true })
+  customDays: CustomDay[];
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsMilitaryTime({ each: true })
+  times: string[];
 }
