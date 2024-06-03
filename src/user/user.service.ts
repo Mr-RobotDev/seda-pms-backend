@@ -14,6 +14,7 @@ import { GetUsersQueryDto } from './dto/get-users.dto';
 import { Role } from '../common/enums/role.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
+import { PartialUser } from './types/partial-user.type';
 
 @Injectable()
 export class UserService {
@@ -22,9 +23,7 @@ export class UserService {
     private readonly userModel: PaginatedModel<User>,
   ) {}
 
-  async createUser(
-    createUserDto: CreateUserDto,
-  ): Promise<{ user: Partial<User> }> {
+  async createUser(createUserDto: CreateUserDto): Promise<PartialUser> {
     const user = await this.getUserByEmail(createUserDto.email);
     if (user) {
       throw new ConflictException('Email already exists');
@@ -49,7 +48,7 @@ export class UserService {
     return this.userModel.findOne({ email });
   }
 
-  async getUserById(userId: string): Promise<{ user: Partial<User> }> {
+  async getUserById(userId: string): Promise<PartialUser> {
     const user = await this.userModel.findById(userId, '-password');
     if (!user) {
       throw new NotFoundException('User not found');
@@ -86,10 +85,7 @@ export class UserService {
     );
   }
 
-  async updateUserRole(
-    userId: string,
-    role: Role,
-  ): Promise<{ user: Partial<User> }> {
+  async updateUserRole(userId: string, role: Role): Promise<PartialUser> {
     const user = await this.userModel.findByIdAndUpdate(
       userId,
       { role },
@@ -112,7 +108,7 @@ export class UserService {
   async updateUser(
     userId: string,
     update: UpdateQuery<User>,
-  ): Promise<{ user: Partial<User> }> {
+  ): Promise<PartialUser> {
     const user = await this.userModel.findByIdAndUpdate(userId, update, {
       new: true,
     });
