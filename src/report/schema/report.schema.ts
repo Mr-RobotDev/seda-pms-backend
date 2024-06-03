@@ -6,6 +6,8 @@ import {
   paginate,
   paginatedAggregation,
 } from '../../common/plugins/pagination.plugin';
+import { ScheduleType, ScheduleTypeValues } from '../enums/schedule-type.enum';
+import { CustomDay, CustomDayValues } from '../enums/custom-day.enum';
 
 @Schema({
   timestamps: true,
@@ -18,6 +20,18 @@ export class Report extends Document {
   name: string;
 
   @Prop({
+    type: String,
+    required: true,
+  })
+  from: string;
+
+  @Prop({
+    type: String,
+    required: true,
+  })
+  to: string;
+
+  @Prop({
     type: [String],
     required: true,
   })
@@ -26,8 +40,9 @@ export class Report extends Document {
   @Prop({
     type: Number,
     required: true,
+    enum: ScheduleTypeValues,
   })
-  frequency: number;
+  scheduleType: ScheduleType;
 
   @Prop({
     type: Boolean,
@@ -42,6 +57,21 @@ export class Report extends Document {
     index: true,
   })
   dashboard: Dashboard;
+
+  @Prop({
+    type: [String],
+    enum: CustomDayValues,
+    required: function () {
+      return this.scheduleType === 'custom';
+    },
+  })
+  customDays: CustomDay[];
+
+  @Prop({
+    type: [String],
+    required: true,
+  })
+  times: string[];
 }
 
 export const ReportSchema = SchemaFactory.createForClass(Report);
