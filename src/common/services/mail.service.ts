@@ -13,8 +13,8 @@ export class MailService {
     emails: string[],
     attachments: AttachmentData[],
     dashboard_name: string,
-    from: string,
-    to: string,
+    from: Date,
+    to: Date,
   ): Promise<boolean> {
     try {
       const promises = emails.map((email) => {
