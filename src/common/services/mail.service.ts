@@ -1,0 +1,42 @@
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as sendGrid from '@sendgrid/mail';
+import { AttachmentData } from '../interfaces/attachment-data.interface';
+
+@Injectable()
+export class MailService {
+  constructor(private readonly configService: ConfigService) {
+    sendGrid.setApiKey(this.configService.get<string>('sendgrid.key'));
+  }
+
+  async sendDashboardReport(
+    emails: string[],
+    attachments: AttachmentData[],
+    dashboard_name: string,
+    from: string,
+    to: string,
+  ): Promise<boolean> {
+    try {
+      const promises = emails.map((email) => {
+        const mail: sendGrid.MailDataRequired = {
+          to: email,
+          from: `Origin Smart Controls <${this.configService.get<string>('sendgrid.from')}>`,
+          dynamicTemplateData: {
+            dashboard_name,
+            from,
+            to,
+          },
+          attachments,
+          templateId: this.configService.get<string>(
+            'sendgrid.verifyEmailTemplate',
+          ),
+        };
+        return sendGrid.send(mail);
+      });
+
+      await Promise.all(promises);
+    } catch {
+      return false;
+    }
+  }
+}
