@@ -30,13 +30,13 @@ export class AlertController {
   }
 
   @Get()
-  alerts(@Query() query: PaginationQueryDto) {
-    return this.alertService.alerts(query);
+  getAlerts(@Query() query: PaginationQueryDto) {
+    return this.alertService.getAlerts(query);
   }
 
   @Get(':alert')
-  alert(@Param('alert', IsObjectIdPipe) alert: string) {
-    return this.alertService.alert(alert);
+  getAlert(@Param('alert', IsObjectIdPipe) alert: string) {
+    return this.alertService.getAlert(alert);
   }
 
   @Roles(Role.ADMIN)

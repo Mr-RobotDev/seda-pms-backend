@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AlertService } from './alert.service';
 import { AlertController } from './alert.controller';
-import { MongooseModule } from '@nestjs/mongoose';
 import { Alert, AlertSchema } from './schema/alert.schema';
 
 @Module({
@@ -15,5 +15,6 @@ import { Alert, AlertSchema } from './schema/alert.schema';
   ],
   controllers: [AlertController],
   providers: [AlertService],
+  exports: [AlertService],
 })
 export class AlertModule {}
