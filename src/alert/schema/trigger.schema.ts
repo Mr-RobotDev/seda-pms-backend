@@ -6,7 +6,6 @@ import { Field, FieldValues } from '../../common/enums/field.enum';
 @Schema({
   _id: false,
   versionKey: false,
-  timestamps: true,
 })
 export class Trigger extends Document {
   @Prop({
@@ -21,13 +20,6 @@ export class Trigger extends Document {
     required: true,
   })
   range: Range;
-
-  @Prop({
-    type: Number,
-    default: 0,
-    min: 0,
-  })
-  triggerCount: number;
 }
 
 export const TriggerSchema = SchemaFactory.createForClass(Trigger);

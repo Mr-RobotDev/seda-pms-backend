@@ -4,20 +4,30 @@ import { RangeType, RangeTypeValues } from '../enums/range-type.enum';
 
 @Schema({
   _id: false,
-  timestamps: true,
+  versionKey: false,
 })
 export class Range extends Document {
   @Prop({
     type: Number,
-    default: 0,
-    min: 0,
+    required: function () {
+      return (
+        this.type === RangeType.OUTSIDE ||
+        this.type === RangeType.INSIDE ||
+        this.type === RangeType.LOWER
+      );
+    },
   })
   lower: number;
 
   @Prop({
     type: Number,
-    default: 0,
-    min: 0,
+    required: function () {
+      return (
+        this.type === RangeType.OUTSIDE ||
+        this.type === RangeType.INSIDE ||
+        this.type === RangeType.UPPER
+      );
+    },
   })
   upper: number;
 
