@@ -1,4 +1,6 @@
 export enum RangeType {
+  LOWER = 'lower',
+  UPPER = 'upper',
   OUTSIDE = 'outside',
   INSIDE = 'inside',
 }
