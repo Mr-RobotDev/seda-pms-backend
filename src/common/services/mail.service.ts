@@ -37,4 +37,37 @@ export class MailService {
       return false;
     }
   }
+
+  async sendDeviceAlert(
+    emails: string[],
+    device: string,
+    field: string,
+    value: number,
+    sign: string,
+    datetime: string,
+  ): Promise<boolean> {
+    try {
+      const promises = emails.map((email) => {
+        const mail: sendGrid.MailDataRequired = {
+          to: email,
+          from: `Origin Smart Controls <${this.configService.get<string>('sendgrid.from')}>`,
+          dynamicTemplateData: {
+            device,
+            field,
+            value,
+            sign,
+            datetime,
+          },
+          templateId: this.configService.get<string>(
+            'sendgrid.deviceAlertTemplate',
+          ),
+        };
+        return sendGrid.send(mail);
+      });
+
+      await Promise.all(promises);
+    } catch {
+      return false;
+    }
+  }
 }
