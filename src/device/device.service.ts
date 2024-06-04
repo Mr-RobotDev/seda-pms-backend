@@ -1,13 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { format } from 'date-fns';
 import { Device } from './schema/device.schema';
 import { LogService } from '../log/log.service';
+import { AlertService } from '../alert/alert.service';
+import { MailService } from '../common/services/mail.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { GetDevicesQueryDto } from './dto/get-devices.dto';
 import { UpdateDeviceByOem } from './dto/update-device-by-oem.dto';
 import { Action } from '../log/enums/action.enum';
 import { Page } from '../log/enums/page.enum';
+import { Field } from '../common/enums/field.enum';
+import { WeekDay } from '../common/enums/week-day.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
 
@@ -17,7 +22,54 @@ export class DeviceService {
     @InjectModel(Device.name)
     private readonly deviceModel: PaginatedModel<Device>,
     private readonly logService: LogService,
-  ) {}
+    private readonly alertService: AlertService,
+    private readonly mailService: MailService,
+  ) {
+    this.getEventStream();
+  }
+
+  getEventStream() {
+    const changeStream = this.deviceModel.watch();
+    changeStream.on('change', async (change) => {
+      if (change.operationType === 'update') {
+        const deviceId = change.documentKey._id;
+        const updatedFields = change.updateDescription.updatedFields;
+
+        if (updatedFields.temperature || updatedFields.relativeHumidity) {
+          const alerts = await this.alertService.filterAlerts(
+            deviceId.toString(),
+            updatedFields.temperature
+              ? Field.TEMPERATURE
+              : Field.RELATIVE_HUMIDITY,
+          );
+
+          const currentDay = format(
+            new Date(),
+            'EEEE',
+          ).toLowerCase() as WeekDay;
+
+          for (const alert of alerts) {
+            if (
+              this.alertService.shouldSendAlert(
+                alert,
+                currentDay,
+                updatedFields.temperature || updatedFields.relativeHumidity,
+              )
+            ) {
+              await this.mailService.sendDeviceAlert(
+                alert.recipients,
+                alert.device.name,
+                Field.TEMPERATURE,
+                updatedFields.temperature || updatedFields.relativeHumidity,
+                updatedFields.temperature ? '°C' : '%',
+                format(alert.device.lastUpdated, 'dd/MM/yyyy HH:mm:ss'),
+              );
+            }
+          }
+        }
+      }
+    });
+  }
 
   async getDeviceByOem(oem: string): Promise<Device> {
     return this.deviceModel.findOne({ oem });
