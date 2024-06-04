@@ -17,6 +17,7 @@ export default () => ({
     key: process.env.SG_API_KEY,
     from: process.env.SG_FROM,
     dashboardReportTemplate: process.env.SG_DASHBOARD_REPORT_TEMPLATE,
+    deviceAlertTemplate: process.env.SG_DEVICE_ALERT_TEMPLATE,
   },
   spaces: {
     cdn: process.env.SPACES_CDN_ENDPOINT,
