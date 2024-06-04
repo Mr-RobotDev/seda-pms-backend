@@ -8,6 +8,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { IsObjectIdPipe } from 'nestjs-object-id';
 import { DashboardService } from './dashboard.service';
@@ -39,8 +40,11 @@ export class DashboardController {
   }
 
   @Get()
-  getDashboards(@CurrentUser() account: Account) {
-    return this.dashboardService.getDashboards(account.sub);
+  getDashboards(
+    @CurrentUser() account: Account,
+    @Query('search') search?: string,
+  ) {
+    return this.dashboardService.getDashboards(account.sub, search);
   }
 
   @Get(':dashboard')

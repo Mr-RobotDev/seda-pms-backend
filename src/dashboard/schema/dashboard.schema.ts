@@ -34,6 +34,8 @@ export class Dashboard extends Document {
 
 export const DashboardSchema = SchemaFactory.createForClass(Dashboard);
 
+DashboardSchema.index({ name: 'text' });
+
 DashboardSchema.plugin(toJSON);
 DashboardSchema.plugin(paginate);
 DashboardSchema.plugin(paginatedAggregation);

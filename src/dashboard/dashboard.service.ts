@@ -33,8 +33,15 @@ export class DashboardService {
     return dashboard;
   }
 
-  async getDashboards(user: string) {
-    const dashboards = await this.dashboardModel.find({}, '-createdAt');
+  async getDashboards(user: string, search?: string) {
+    const dashboards = await this.dashboardModel.find(
+      {
+        ...(search && {
+          name: { $regex: search, $options: 'i' },
+        }),
+      },
+      '-createdAt',
+    );
     await this.logService.createLog(user, {
       action: Action.VIEWED,
       page: Page.DASHBOARD,
