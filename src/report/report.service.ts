@@ -19,8 +19,8 @@ import { EventService } from '../event/event.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
-import { WeekDay } from './enums/week-day.enum';
-import { ScheduleType } from './enums/schedule-type.enum';
+import { WeekDay } from '../common/enums/week-day.enum';
+import { ScheduleType } from '../common/enums/schedule-type.enum';
 import { TimeFrame } from './enums/timeframe.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
@@ -50,7 +50,7 @@ export class ReportService {
     for (const report of reports) {
       if (this.shouldSendReport(report, currentDay, currentTime)) {
         const { from, to } = this.getTimeFrameRange(report.timeframe);
-        const cards = await this.cardService.cards(report.dashboard.id);
+        const cards = await this.cardService.getCards(report.dashboard.id);
         for (const card of cards) {
           for (const device of card.devices) {
             const events = await this.eventService.getEvents({
@@ -140,11 +140,11 @@ export class ReportService {
       ...createReportDto,
       dashboard,
     });
-    const report = await this.report(dashboard, newReport.id);
+    const report = await this.getReport(dashboard, newReport.id);
     return report;
   }
 
-  async reports(
+  async getReports(
     dashboard: string,
     query: PaginationQueryDto,
   ): Promise<Result<Report>> {
@@ -165,7 +165,7 @@ export class ReportService {
     );
   }
 
-  async report(dashboard: string, id: string): Promise<Report> {
+  async getReport(dashboard: string, id: string): Promise<Report> {
     const report = await this.reportModel.findOne(
       { _id: id, dashboard },
       '-createdAt',

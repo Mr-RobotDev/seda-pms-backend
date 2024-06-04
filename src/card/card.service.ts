@@ -37,11 +37,11 @@ export class CardService {
         devicesCount: createCardDto.devices.length,
       },
     });
-    const card = await this.card(dashboard, newCard.id);
+    const card = await this.getCard(dashboard, newCard.id);
     return card;
   }
 
-  cards(dashboard: string) {
+  getCards(dashboard: string) {
     return this.cardModel.find(
       {
         dashboard,
@@ -56,7 +56,7 @@ export class CardService {
     );
   }
 
-  async card(dashboard: string, id: string) {
+  async getCard(dashboard: string, id: string) {
     const card = await this.cardModel.findOne(
       {
         _id: id,

@@ -9,8 +9,8 @@ import {
   IsMilitaryTime,
   ValidateIf,
 } from 'class-validator';
-import { ScheduleType } from '../enums/schedule-type.enum';
-import { WeekDay } from '../enums/week-day.enum';
+import { ScheduleType } from '../../common/enums/schedule-type.enum';
+import { WeekDay } from '../../common/enums/week-day.enum';
 import { TimeFrame } from '../enums/timeframe.enum';
 
 export class CreateReportDto {

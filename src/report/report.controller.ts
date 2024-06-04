@@ -33,19 +33,19 @@ export class ReportController {
   }
 
   @Get()
-  reports(
+  getReports(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
     @Query() query: PaginationQueryDto,
   ) {
-    return this.reportService.reports(dashboard, query);
+    return this.reportService.getReports(dashboard, query);
   }
 
   @Get(':report')
-  report(
+  getReport(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
     @Param('report') report: string,
   ) {
-    return this.reportService.report(dashboard, report);
+    return this.reportService.getReport(dashboard, report);
   }
 
   @Roles(Role.ADMIN)

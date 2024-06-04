@@ -34,16 +34,16 @@ export class CardController {
   }
 
   @Get()
-  cards(@Param('dashboard', IsObjectIdPipe) dashboard: string) {
-    return this.cardService.cards(dashboard);
+  getCards(@Param('dashboard', IsObjectIdPipe) dashboard: string) {
+    return this.cardService.getCards(dashboard);
   }
 
   @Get(':card')
-  card(
+  getCard(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
     @Param('card', IsObjectIdPipe) card: string,
   ) {
-    return this.cardService.card(dashboard, card);
+    return this.cardService.getCard(dashboard, card);
   }
 
   @Roles(Role.ADMIN)

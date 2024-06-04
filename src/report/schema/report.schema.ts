@@ -6,8 +6,11 @@ import {
   paginate,
   paginatedAggregation,
 } from '../../common/plugins/pagination.plugin';
-import { ScheduleType, ScheduleTypeValues } from '../enums/schedule-type.enum';
-import { WeekDay, WeekDayValues } from '../enums/week-day.enum';
+import {
+  ScheduleType,
+  ScheduleTypeValues,
+} from '../../common/enums/schedule-type.enum';
+import { WeekDay, WeekDayValues } from '../../common/enums/week-day.enum';
 import { TimeFrame } from '../enums/timeframe.enum';
 
 @Schema({
