@@ -40,6 +40,7 @@ export class UserService {
         lastName: newUser.lastName,
         email: newUser.email,
         role: newUser.role,
+        organization: newUser.organization,
       },
     };
   }
