@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { IsObjectIdPipe } from 'nestjs-object-id';
+import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
 import { DeviceService } from './device.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';

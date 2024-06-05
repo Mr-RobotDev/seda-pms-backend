@@ -8,11 +8,11 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { IsObjectIdPipe } from 'nestjs-object-id';
 import { ReportService } from './report.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 
@@ -43,7 +43,7 @@ export class ReportController {
   @Get(':report')
   getReport(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
-    @Param('report') report: string,
+    @Param('report', IsObjectIdPipe) report: string,
   ) {
     return this.reportService.getReport(dashboard, report);
   }
@@ -52,7 +52,7 @@ export class ReportController {
   @Patch(':report')
   updateReport(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
-    @Param('report') report: string,
+    @Param('report', IsObjectIdPipe) report: string,
     @Body() updateReportDto: UpdateReportDto,
   ) {
     return this.reportService.updateReport(dashboard, report, updateReportDto);
@@ -62,7 +62,7 @@ export class ReportController {
   @Delete(':report')
   removeReport(
     @Param('dashboard', IsObjectIdPipe) dashboard: string,
-    @Param('report') report: string,
+    @Param('report', IsObjectIdPipe) report: string,
   ) {
     return this.reportService.removeReport(dashboard, report);
   }

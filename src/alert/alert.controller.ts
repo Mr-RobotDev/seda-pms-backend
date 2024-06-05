@@ -8,7 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { IsObjectIdPipe } from 'nestjs-object-id';
+import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
 import { AlertService } from './alert.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';

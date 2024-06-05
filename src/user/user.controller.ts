@@ -20,13 +20,13 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserRoleDto } from './dto/update-role.dto';
 import { GetUsersQueryDto } from './dto/get-users.dto';
+import { ImageUploadPipe } from '../common/pipes/image.pipe';
+import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Account } from '../common/interfaces/account.interface';
-import { ImageUploadPipe } from '../common/pipes/image.pipe';
 import { Role } from '../common/enums/role.enum';
 import { Folder } from '../common/enums/folder.enum';
-import { IsObjectIdPipe } from 'nestjs-object-id';
 
 @Controller({
   path: 'users',

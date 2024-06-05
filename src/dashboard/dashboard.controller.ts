@@ -10,7 +10,7 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { IsObjectIdPipe } from 'nestjs-object-id';
+import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
 import { DashboardService } from './dashboard.service';
 import { CreateDashboardDto } from './dto/create-dashboard.dto';
 import { UpdateDashboardDto } from './dto/update-dashboard.dto';

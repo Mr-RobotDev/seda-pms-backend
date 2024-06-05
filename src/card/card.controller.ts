@@ -9,7 +9,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { IsObjectIdPipe } from 'nestjs-object-id';
+import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
 import { CardService } from './card.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
