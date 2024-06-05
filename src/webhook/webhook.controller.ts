@@ -5,7 +5,7 @@ import {
   Req,
   HttpCode,
   HttpStatus,
-  Body,
+  RawBodyRequest,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { WebhookService } from './webhook.service';
@@ -30,7 +30,9 @@ export class WebhookController {
 
   @Post('receive-pressure-events')
   @HttpCode(HttpStatus.OK)
-  receivePressureEvents(@Body() body: any) {
-    console.log('Pressure events received', body);
+  receivePressureEvents(@Req() req: RawBodyRequest<Request>) {
+    const rawBodyBuffer = req.rawBody;
+    const rawBodyString = rawBodyBuffer.toString('utf8');
+    console.log('Pressure events received', rawBodyString);
   }
 }
