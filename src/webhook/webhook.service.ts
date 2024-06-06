@@ -4,7 +4,8 @@ import * as crypto from 'crypto';
 import * as jwt from 'jsonwebtoken';
 import { EventService } from '../event/event.service';
 import { DeviceService } from '../device/device.service';
-import { DeviceType } from '../device/enums/device-type.enum';
+import { EventType } from '../event/enums/event-type.enum';
+import { PressureDeviceSlug } from 'src/device/enums/pressure-device-slug.enum';
 
 @Injectable()
 export class WebhookService {
@@ -13,6 +14,28 @@ export class WebhookService {
     private readonly eventService: EventService,
     private readonly deviceService: DeviceService,
   ) {}
+
+  async receiveEvents(payload: any, signature: string): Promise<void> {
+    if (!this.verifyRequest(JSON.stringify(payload), signature)) {
+      throw new BadRequestException();
+    }
+
+    const eventType: EventType = payload.event.eventType;
+
+    switch (eventType) {
+      case EventType.HUMIDITY:
+        await this.handleHumidityEvent(payload);
+        break;
+      case EventType.NETWORK_STATUS:
+        await this.handleNetworkStatusEvent(payload);
+        break;
+      case EventType.CONNECTION_STATUS:
+        await this.handleConnectionStatusEvent(payload);
+        break;
+      default:
+        break;
+    }
+  }
 
   private verifyRequest(payload: string, signature: string): boolean {
     let decoded: any;
@@ -36,28 +59,6 @@ export class WebhookService {
     return true;
   }
 
-  async receiveEvents(payload: any, signature: string): Promise<void> {
-    if (!this.verifyRequest(JSON.stringify(payload), signature)) {
-      throw new BadRequestException();
-    }
-
-    const eventType: DeviceType = payload.event.eventType;
-
-    switch (eventType) {
-      case DeviceType.HUMIDITY:
-        await this.handleHumidityEvent(payload);
-        break;
-      case DeviceType.NETWORK_STATUS:
-        await this.handleNetworkStatusEvent(payload);
-        break;
-      case DeviceType.CONNECTION_STATUS:
-        await this.handleConnectionStatusEvent(payload);
-        break;
-      default:
-        break;
-    }
-  }
-
   private async handleHumidityEvent(payload: any): Promise<void> {
     const oem: string = payload.metadata.deviceId;
     const temperature: number = payload.event.data.humidity.temperature;
@@ -65,20 +66,17 @@ export class WebhookService {
       payload.event.data.humidity.relativeHumidity;
     const lastUpdated: Date = payload.event.data.humidity.updateTime;
 
-    await Promise.all([
-      this.eventService.createEvent(
-        oem,
-        DeviceType.HUMIDITY,
-        temperature,
-        relativeHumidity,
-        lastUpdated,
-      ),
-      this.deviceService.updateDeviceByOem(oem, {
-        temperature,
-        relativeHumidity,
-        lastUpdated,
-      }),
-    ]);
+    const device = await this.deviceService.updateDeviceByOem(oem, {
+      temperature,
+      relativeHumidity,
+      lastUpdated,
+    });
+
+    await this.eventService.createEvent({
+      device: device.id,
+      temperature,
+      relativeHumidity,
+    });
   }
 
   private async handleNetworkStatusEvent(payload: any): Promise<void> {
@@ -100,6 +98,22 @@ export class WebhookService {
 
     await this.deviceService.updateDeviceByOem(oem, {
       isOffline,
+    });
+  }
+
+  async receivePressureEvents(
+    rawBody: Buffer,
+    pressureDeviceSlug: PressureDeviceSlug,
+  ): Promise<void> {
+    const pressure = rawBody.toString('utf8');
+    const device = await this.deviceService.updateDeviceBySlug(
+      pressureDeviceSlug,
+      Number(pressure),
+    );
+
+    await this.eventService.createEvent({
+      device: device.id,
+      pressure: Number(pressure),
     });
   }
 }
