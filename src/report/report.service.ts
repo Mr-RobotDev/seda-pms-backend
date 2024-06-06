@@ -53,8 +53,7 @@ export class ReportService {
         const cards = await this.cardService.getCards(report.dashboard.id);
         for (const card of cards) {
           for (const device of card.devices) {
-            const events = await this.eventService.getEvents({
-              oem: device.oem,
+            const events = await this.eventService.getEvents(device.id, {
               eventTypes: card.field,
               from,
               to,
