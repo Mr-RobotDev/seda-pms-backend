@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
 import { AlertService } from './alert.service';
@@ -25,6 +27,7 @@ export class AlertController {
 
   @Roles(Role.ADMIN)
   @Post()
+  @HttpCode(HttpStatus.OK)
   createAlert(@Body() createAlertDto: CreateAlertDto) {
     return this.alertService.createAlert(createAlertDto);
   }
