@@ -5,7 +5,7 @@ import * as jwt from 'jsonwebtoken';
 import { EventService } from '../event/event.service';
 import { DeviceService } from '../device/device.service';
 import { EventType } from '../event/enums/event-type.enum';
-import { PressureDeviceSlug } from 'src/device/enums/pressure-device-slug.enum';
+import { PressureDeviceSlug } from '../device/enums/pressure-device-slug.enum';
 
 @Injectable()
 export class WebhookService {

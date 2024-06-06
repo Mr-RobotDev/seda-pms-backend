@@ -10,7 +10,7 @@ import {
 import { Request } from 'express';
 import { WebhookService } from './webhook.service';
 import { Public } from '../common/decorators/public.decorator';
-import { PressureDeviceSlug } from 'src/device/enums/pressure-device-slug.enum';
+import { PressureDeviceSlug } from '../device/enums/pressure-device-slug.enum';
 
 @Public()
 @Controller({

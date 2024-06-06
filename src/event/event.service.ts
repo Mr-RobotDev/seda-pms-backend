@@ -15,9 +15,9 @@ import { UserService } from '../user/user.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { GetEventsQueryDto } from './dto/get-events.dto';
 import { Folder } from '../common/enums/folder.enum';
+import { DeviceType } from '../device/enums/device-type.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { PartialUser } from '../user/types/partial-user.type';
-import { DeviceType } from 'src/device/enums/device-type.enum';
 
 @Injectable()
 export class EventService implements OnModuleInit {

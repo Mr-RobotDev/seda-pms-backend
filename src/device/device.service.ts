@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { format } from 'date-fns';
 import { Device } from './schema/device.schema';
+import { Alert } from '../alert/schema/alert.schema';
 import { LogService } from '../log/log.service';
 import { AlertService } from '../alert/alert.service';
 import { MailService } from '../common/services/mail.service';
@@ -32,43 +33,91 @@ export class DeviceService {
     const changeStream = this.deviceModel.watch();
     changeStream.on('change', async (change) => {
       if (change.operationType === 'update') {
-        const deviceId = change.documentKey._id;
-        const updatedFields = change.updateDescription.updatedFields;
-
-        if (updatedFields.temperature || updatedFields.relativeHumidity) {
-          const alerts = await this.alertService.filterAlerts(
-            deviceId.toString(),
-            updatedFields.temperature
-              ? Field.TEMPERATURE
-              : Field.RELATIVE_HUMIDITY,
-          );
-
-          const currentDay = format(
-            new Date(),
-            'EEEE',
-          ).toLowerCase() as WeekDay;
-
-          for (const alert of alerts) {
-            if (
-              this.alertService.shouldSendAlert(
-                alert,
-                currentDay,
-                updatedFields.temperature || updatedFields.relativeHumidity,
-              )
-            ) {
-              await this.mailService.sendDeviceAlert(
-                alert.recipients,
-                alert.device.name,
-                Field.TEMPERATURE,
-                updatedFields.temperature || updatedFields.relativeHumidity,
-                updatedFields.temperature ? '°C' : '%',
-                format(alert.device.lastUpdated, 'dd/MM/yyyy HH:mm:ss'),
-              );
-            }
-          }
-        }
+        await this.handleUpdateChange(change);
       }
     });
+  }
+
+  private async handleUpdateChange(change: any) {
+    const deviceId = change.documentKey._id;
+    const updatedFields = change.updateDescription.updatedFields;
+
+    const field = this.getFieldType(updatedFields);
+    if (field) {
+      const alerts = await this.alertService.filterAlerts(
+        deviceId.toString(),
+        field,
+      );
+
+      const currentDay = format(new Date(), 'EEEE').toLowerCase() as WeekDay;
+      await this.processAlerts(alerts, updatedFields, currentDay);
+    }
+  }
+
+  private getFieldType(updatedFields: any): Field | null {
+    if (updatedFields.temperature) return Field.TEMPERATURE;
+    if (updatedFields.relativeHumidity) return Field.RELATIVE_HUMIDITY;
+    if (updatedFields.pressure) return Field.PRESSURE;
+    return null;
+  }
+
+  private async processAlerts(
+    alerts: Alert[],
+    updatedFields: any,
+    currentDay: WeekDay,
+  ) {
+    const fieldType = this.getFieldType(updatedFields);
+    const updatedValue = this.getUpdatedValue(updatedFields);
+
+    const alertPromises = alerts.map((alert) => {
+      if (this.alertService.shouldSendAlert(alert, currentDay, updatedValue)) {
+        return this.sendAlertEmail(alert, fieldType, updatedValue);
+      }
+    });
+
+    await Promise.all(alertPromises);
+  }
+
+  private async sendAlertEmail(
+    alert: Alert,
+    field: Field,
+    updatedValue: number,
+  ) {
+    try {
+      const unit = this.getFieldUnit(field);
+      const updated = format(alert.device.lastUpdated, 'dd/MM/yyyy HH:mm:ss');
+      await this.mailService.sendDeviceAlert(
+        alert.recipients,
+        alert.device.name,
+        field,
+        updatedValue,
+        unit,
+        updated,
+      );
+    } catch (error) {
+      console.error('Failed to send alert email:', error);
+    }
+  }
+
+  private getUpdatedValue(updatedFields: any): number {
+    return (
+      updatedFields.temperature ||
+      updatedFields.relativeHumidity ||
+      updatedFields.pressure
+    );
+  }
+
+  private getFieldUnit(field: Field): string {
+    switch (field) {
+      case Field.TEMPERATURE:
+        return '°C';
+      case Field.RELATIVE_HUMIDITY:
+        return '%';
+      case Field.PRESSURE:
+        return 'Pa';
+      default:
+        return '';
+    }
   }
 
   async getDeviceById(device: string): Promise<Device> {
