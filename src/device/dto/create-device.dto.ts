@@ -1,9 +1,14 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { LocationDto } from './location.dto';
 import { Type } from 'class-transformer';
+import { DeviceType } from '../enums/device-type.enum';
 
 export class CreateDeviceDto {
+  @ValidateIf(
+    (o) => o.type === DeviceType.COLD || o.type === DeviceType.HUMIDITY,
+  )
   @IsString()
+  @IsNotEmpty()
   oem?: string;
 
   @IsString()
@@ -12,13 +17,11 @@ export class CreateDeviceDto {
 
   @IsString()
   @IsNotEmpty()
-  type: string;
+  slug: string;
 
-  @IsNumber()
-  temperature?: number;
-
-  @IsNumber()
-  relativeHumidity?: number;
+  @IsEnum(DeviceType)
+  @IsNotEmpty()
+  type: DeviceType;
 
   @Type(() => LocationDto)
   @IsNotEmpty()
