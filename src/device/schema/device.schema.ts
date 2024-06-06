@@ -5,6 +5,7 @@ import {
   paginate,
   paginatedAggregation,
 } from '../../common/plugins/pagination.plugin';
+import { DeviceType } from '../enums/device-type.enum';
 
 @Schema({
   _id: false,
@@ -35,6 +36,9 @@ export class Device extends Document {
     unique: true,
     index: true,
     sparse: true,
+    required: function (this: Device) {
+      return this.type === DeviceType.COLD || this.type === DeviceType.HUMIDITY;
+    },
   })
   oem?: string;
 
@@ -43,6 +47,14 @@ export class Device extends Document {
     required: true,
   })
   name: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    index: true,
+  })
+  slug: string;
 
   @Prop({
     type: String,
@@ -59,6 +71,11 @@ export class Device extends Document {
     type: Number,
   })
   relativeHumidity?: number;
+
+  @Prop({
+    type: Number,
+  })
+  pressure?: number;
 
   @Prop({
     type: Number,
