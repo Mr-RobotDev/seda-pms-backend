@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { Device } from '../../device/schema/device.schema';
 import toJSON from '../../common/plugins/toJSON.plugin';
 import {
   paginate,
@@ -11,29 +12,27 @@ import {
 })
 export class Event extends Document {
   @Prop({
-    type: String,
+    type: Number,
+  })
+  temperature?: number;
+
+  @Prop({
+    type: Number,
+  })
+  relativeHumidity?: number;
+
+  @Prop({
+    type: Number,
+  })
+  pressure?: number;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Device.name,
     required: true,
     index: true,
   })
-  oem: string;
-
-  @Prop({
-    type: String,
-    required: true,
-  })
-  eventType: string;
-
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  temperature: number;
-
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  relativeHumidity: number;
+  device: Device;
 
   createdAt: Date;
 }
