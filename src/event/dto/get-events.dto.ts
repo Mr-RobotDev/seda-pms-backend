@@ -12,10 +12,6 @@ export class GetEventsQueryDto {
   @IsNotEmpty()
   to?: Date;
 
-  @IsString()
-  @IsNotEmpty()
-  oem?: string;
-
   @IsOptional()
   @IsString()
   eventTypes?: string;
