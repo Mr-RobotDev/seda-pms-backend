@@ -59,7 +59,7 @@ export class Report extends Document {
   @Prop({
     type: [String],
     enum: WeekDayValues,
-    required: function () {
+    required: function (this: Report) {
       return this.scheduleType === ScheduleType.CUSTOM;
     },
   })
