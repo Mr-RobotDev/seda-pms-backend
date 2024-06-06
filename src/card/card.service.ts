@@ -50,7 +50,7 @@ export class CardService {
       {
         populate: {
           path: 'devices',
-          select: 'name type oem',
+          select: 'name type',
         },
       },
     );
@@ -66,7 +66,7 @@ export class CardService {
       {
         populate: {
           path: 'devices',
-          select: 'name oem',
+          select: 'name',
         },
       },
     );
@@ -90,6 +90,10 @@ export class CardService {
       {
         new: true,
         projection: '-createdAt -dashboard',
+        populate: {
+          path: 'devices',
+          select: 'name',
+        },
       },
     );
     if (!card) {
@@ -106,6 +110,10 @@ export class CardService {
       },
       {
         projection: '-createdAt -dashboard',
+        populate: {
+          path: 'devices',
+          select: 'name',
+        },
       },
     );
     if (!card) {
