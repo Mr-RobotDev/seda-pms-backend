@@ -10,7 +10,13 @@ async function bootstrap() {
     rawBody: true,
   });
   app.useBodyParser('text');
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
   app.use(helmet());
   app.enableCors();
   app.enableVersioning({
