@@ -12,6 +12,7 @@ import { User } from '../user/schema/user.schema';
 import { MediaService } from '../media/media.service';
 import { DeviceService } from '../device/device.service';
 import { UserService } from '../user/user.service';
+import { CreateEventDto } from './dto/create-event.dto';
 import { GetEventsQueryDto } from './dto/get-events.dto';
 import { Folder } from '../common/enums/folder.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
@@ -36,12 +37,11 @@ export class EventService implements OnModuleInit {
     });
   }
 
-  getChangeStream(oem?: string): Observable<any> {
+  getChangeStream(device?: string): Observable<any> {
     return this.changeStreamSubject.asObservable().pipe(
-      filter((change) => !oem || change.fullDocument.oem === oem),
+      filter((change) => !device || change.fullDocument.device === device),
       map((change) => ({
-        oem: change.fullDocument.oem,
-        eventType: change.fullDocument.eventType,
+        device: change.fullDocument.device,
         temperature: change.fullDocument.temperature,
         relativeHumidity: change.fullDocument.relativeHumidity,
         createdAt: change.fullDocument.createdAt,
@@ -50,37 +50,22 @@ export class EventService implements OnModuleInit {
     );
   }
 
-  createEvent(
-    oem: string,
-    eventType: string,
-    temperature: number,
-    relativeHumidity: number,
-    updateTime: Date,
-  ): Promise<Event> {
-    return this.eventModel.create({
-      oem,
-      eventType,
-      temperature,
-      relativeHumidity,
-      createdAt: updateTime,
-      updatedAt: updateTime,
-    });
+  createEvent(createEventDto: CreateEventDto): Promise<Event> {
+    return this.eventModel.create(createEventDto);
   }
 
-  async getEvents(query: GetEventsQueryDto): Promise<Event[]> {
-    const { oem, from, to, eventTypes } = query;
+  async getEvents(device: string, query: GetEventsQueryDto): Promise<Event[]> {
+    const { from, to, eventTypes } = query;
     const adjustedTo = new Date(to);
     adjustedTo.setHours(23, 59, 59, 999);
 
     const filter: FilterQuery<Event> = {
-      ...(oem && { oem }),
+      device,
       createdAt: { $gte: from, $lte: adjustedTo },
     };
 
     const projection: ProjectionType<Event> = {
       createdAt: 1,
-      oem: 1,
-      eventType: 1,
     };
     if (eventTypes) {
       const eventTypesArray = eventTypes.split(',');
@@ -119,7 +104,6 @@ export class EventService implements OnModuleInit {
       path: filePath,
       header: [
         { id: 'id', title: 'Event ID' },
-        { id: 'oem', title: 'Device ID' },
         { id: 'deviceName', title: 'Device Name' },
         { id: 'deviceType', title: 'Device Type' },
         { id: 'temperature', title: 'Temperature (°C)' },
@@ -131,7 +115,6 @@ export class EventService implements OnModuleInit {
 
     const records = events.map((event) => ({
       id: event.id,
-      oem: event.oem,
       deviceName: device.name,
       deviceType:
         device.type === 'humidity' || device.type === 'cold'
@@ -149,10 +132,14 @@ export class EventService implements OnModuleInit {
     return filePath;
   }
 
-  async exportEvents(query: GetEventsQueryDto, user?: string) {
+  async exportEvents(
+    deviceId: string,
+    query: GetEventsQueryDto,
+    user?: string,
+  ) {
     const { from, to } = query;
-    const events = await this.getEvents(query);
-    const device = await this.deviceService.getDeviceByOem(query.oem);
+    const events = await this.getEvents(deviceId, query);
+    const device = await this.deviceService.getDeviceById(deviceId);
     let result: PartialUser;
     if (user) {
       result = await this.userService.getUserById(user);
