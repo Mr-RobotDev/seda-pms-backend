@@ -1,31 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Location, LocationSchema } from './location.schema';
+import { DeviceType, DeviceTypeValues } from '../enums/device-type.enum';
 import toJSON from '../../common/plugins/toJSON.plugin';
 import {
   paginate,
   paginatedAggregation,
 } from '../../common/plugins/pagination.plugin';
-import { DeviceType } from '../enums/device-type.enum';
-
-@Schema({
-  _id: false,
-  versionKey: false,
-})
-class Location extends Document {
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  lat: number;
-
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  long: number;
-}
-
-const LocationSchema = SchemaFactory.createForClass(Location);
 
 @Schema({
   timestamps: true,
@@ -59,8 +40,9 @@ export class Device extends Document {
   @Prop({
     type: String,
     required: true,
+    enum: DeviceTypeValues,
   })
-  type: string;
+  type: DeviceType;
 
   @Prop({
     type: Number,
