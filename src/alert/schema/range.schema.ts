@@ -9,7 +9,7 @@ import { RangeType, RangeTypeValues } from '../enums/range-type.enum';
 export class Range extends Document {
   @Prop({
     type: Number,
-    required: function () {
+    required: function (this: Range) {
       return (
         this.type === RangeType.OUTSIDE ||
         this.type === RangeType.INSIDE ||
@@ -21,7 +21,7 @@ export class Range extends Document {
 
   @Prop({
     type: Number,
-    required: function () {
+    required: function (this: Range) {
       return (
         this.type === RangeType.OUTSIDE ||
         this.type === RangeType.INSIDE ||
