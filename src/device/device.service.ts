@@ -115,12 +115,12 @@ export class DeviceService {
           ],
         }),
       },
-      { page, limit, projection: '-createdAt' },
+      { page, limit, projection: '-createdAt -slug' },
     );
   }
 
   async device(user: string, id: string): Promise<Device> {
-    const device = await this.deviceModel.findById(id, '-createdAt');
+    const device = await this.deviceModel.findById(id, '-createdAt -slug');
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
@@ -187,6 +187,7 @@ export class DeviceService {
       updateDeviceDto,
       {
         new: true,
+        projection: '-createdAt -slug',
       },
     );
     if (!device) {
@@ -201,7 +202,9 @@ export class DeviceService {
   }
 
   async removeDevice(user: string, id: string): Promise<Device> {
-    const device = await this.deviceModel.findByIdAndDelete(id);
+    const device = await this.deviceModel.findByIdAndDelete(id, {
+      projection: '-createdAt -slug',
+    });
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
