@@ -71,8 +71,16 @@ export class DeviceService {
     });
   }
 
-  async getDeviceByOem(oem: string): Promise<Device> {
-    return this.deviceModel.findOne({ oem });
+  async getDeviceById(device: string): Promise<Device> {
+    return this.deviceModel.findById(device);
+  }
+
+  async updateDeviceBySlug(slug: string, pressure: number): Promise<Device> {
+    return this.deviceModel.findOneAndUpdate(
+      { slug },
+      { pressure, lastUpdated: new Date() },
+      { new: true },
+    );
   }
 
   async createDevice(
