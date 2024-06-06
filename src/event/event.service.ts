@@ -17,6 +17,7 @@ import { GetEventsQueryDto } from './dto/get-events.dto';
 import { Folder } from '../common/enums/folder.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { PartialUser } from '../user/types/partial-user.type';
+import { DeviceType } from 'src/device/enums/device-type.enum';
 
 @Injectable()
 export class EventService implements OnModuleInit {
@@ -75,6 +76,7 @@ export class EventService implements OnModuleInit {
     } else {
       projection.temperature = 1;
       projection.relativeHumidity = 1;
+      projection.pressure = 1;
     }
 
     return this.eventModel.find(filter, projection).sort({ createdAt: -1 });
@@ -94,10 +96,11 @@ export class EventService implements OnModuleInit {
 
     const formattedFrom = format(new Date(from), 'MMMM d, yyyy');
     const formattedTo = format(new Date(to), 'MMMM d, yyyy');
+    const currentTime = format(new Date(), 'HH:mm:ss');
 
     const filePath = path.join(
       exportsDirectory,
-      `Events - ${device.name} (${formattedFrom} - ${formattedTo}).csv`,
+      `Events - ${device.name} (${formattedFrom} - ${formattedTo}) - ${currentTime}.csv`,
     );
 
     const csvWriter = createObjectCsvWriter({
@@ -106,8 +109,16 @@ export class EventService implements OnModuleInit {
         { id: 'id', title: 'Event ID' },
         { id: 'deviceName', title: 'Device Name' },
         { id: 'deviceType', title: 'Device Type' },
-        { id: 'temperature', title: 'Temperature (°C)' },
-        { id: 'relativeHumidity', title: 'Relative Humidity (%)' },
+        ...(device.type === DeviceType.COLD ||
+        device.type === DeviceType.HUMIDITY
+          ? [
+              { id: 'temperature', title: 'Temperature (°C)' },
+              { id: 'relativeHumidity', title: 'Relative Humidity (%)' },
+            ]
+          : []),
+        ...(device.type === DeviceType.PRESSURE
+          ? [{ id: 'pressure', title: 'Pressure (Pa)' }]
+          : []),
         { id: 'timestamp', title: 'Timestamp' },
         ...(user ? [{ id: 'exportedBy', title: 'Exported By' }] : []),
       ],
@@ -120,8 +131,15 @@ export class EventService implements OnModuleInit {
         device.type === 'humidity' || device.type === 'cold'
           ? 'Humidity/Temperature'
           : 'Pressure',
-      temperature: event.temperature,
-      relativeHumidity: event.relativeHumidity,
+      ...(device.type === DeviceType.COLD || device.type === DeviceType.HUMIDITY
+        ? {
+            temperature: event.temperature,
+            relativeHumidity: event.relativeHumidity,
+          }
+        : {}),
+      ...(device.type === DeviceType.PRESSURE && {
+        pressure: event.pressure,
+      }),
       timestamp: event.createdAt,
       ...(user && {
         exportedBy: `${user.firstName} ${user.lastName}`,
@@ -139,6 +157,7 @@ export class EventService implements OnModuleInit {
   ) {
     const { from, to } = query;
     const events = await this.getEvents(deviceId, query);
+    console.log(events[0]);
     const device = await this.deviceService.getDeviceById(deviceId);
     let result: PartialUser;
     if (user) {
