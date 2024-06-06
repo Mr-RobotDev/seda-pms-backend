@@ -105,9 +105,12 @@ export class DeviceService {
       action: Action.VIEWED,
       page: Page.DEVICES,
     });
+
+    const types = type ? type.split(',').map((type) => type.trim()) : [];
+
     return this.deviceModel.paginate(
       {
-        ...(type && { type }),
+        ...(type && { type: { $in: types } }),
         ...(search && {
           $or: [
             { oem: { $regex: search, $options: 'i' } },
