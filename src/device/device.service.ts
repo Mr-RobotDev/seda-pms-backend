@@ -146,6 +146,7 @@ export class DeviceService {
           totalDevices: { $sum: 1 },
           highestTemperature: { $max: '$temperature' },
           highestRelativeHumidity: { $max: '$relativeHumidity' },
+          highestPressure: { $max: '$pressure' },
           online: {
             $sum: {
               $cond: [{ $eq: ['$isOffline', false] }, 1, 0],
@@ -164,6 +165,7 @@ export class DeviceService {
           totalDevices: 1,
           highestTemperature: 1,
           highestRelativeHumidity: 1,
+          highestPressure: 1,
           online: 1,
           offline: 1,
         },
