@@ -35,7 +35,7 @@ export class ReportService {
     private readonly eventService: EventService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE, { timeZone: 'Europe/London' })
   async sendReports() {
     const currentDay = format(new Date(), 'EEEE').toLowerCase() as WeekDay;
     const currentTime = format(new Date(), 'HH:mm');

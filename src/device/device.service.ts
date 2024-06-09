@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { format } from 'date-fns';
 import { Device } from './schema/device.schema';
 import { Alert } from '../alert/schema/alert.schema';
@@ -129,6 +130,20 @@ export class DeviceService {
       { slug },
       { pressure, lastUpdated: new Date() },
       { new: true },
+    );
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS, { timeZone: 'Europe/London' })
+  async updateDeviceStatus(): Promise<void> {
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    await this.deviceModel.updateMany(
+      { lastUpdated: { $lt: twelveHoursAgo } },
+      { isOffline: true },
+    );
+
+    await this.deviceModel.updateMany(
+      { lastUpdated: { $gte: twelveHoursAgo } },
+      { isOffline: false },
     );
   }
 
