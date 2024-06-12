@@ -125,10 +125,18 @@ export class DeviceService {
     return this.deviceModel.findById(device);
   }
 
-  async updateDeviceBySlug(slug: string, pressure: number): Promise<Device> {
+  async getDeviceBySlug(slug: string): Promise<Device> {
+    return this.deviceModel.findOne({ slug });
+  }
+
+  async updateDeviceBySlug(
+    slug: string,
+    pressure: number,
+    lastUpdated?: Date,
+  ): Promise<Device> {
     return this.deviceModel.findOneAndUpdate(
       { slug },
-      { pressure, lastUpdated: new Date() },
+      { pressure, ...(lastUpdated && { lastUpdated }) },
       { new: true },
     );
   }
