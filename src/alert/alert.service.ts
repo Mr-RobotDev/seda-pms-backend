@@ -81,7 +81,7 @@ export class AlertService {
         populate: [
           {
             path: 'device',
-            select: 'name lastUpdated',
+            select: 'name',
           },
         ],
       },
@@ -92,7 +92,7 @@ export class AlertService {
     const alert = await this.alertModel.findById(id, '-createdAt', {
       populate: {
         path: 'device',
-        select: 'name lastUpdated',
+        select: 'name lastUpdated temperature relativeHumidity pressure',
       },
     });
     if (!alert) {
@@ -113,7 +113,7 @@ export class AlertService {
         projection: '-createdAt',
         populate: {
           path: 'device',
-          select: 'name lastUpdated',
+          select: 'name lastUpdated temperature relativeHumidity pressure',
         },
       },
     );
@@ -128,7 +128,7 @@ export class AlertService {
       projection: '-createdAt',
       populate: {
         path: 'device',
-        select: 'name lastUpdated',
+        select: 'name lastUpdated temperature relativeHumidity pressure',
       },
     });
     if (!result) {
