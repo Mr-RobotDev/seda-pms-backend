@@ -4,9 +4,7 @@ import { Type } from 'class-transformer';
 import { DeviceType } from '../enums/device-type.enum';
 
 export class CreateDeviceDto {
-  @ValidateIf(
-    (o) => o.type === DeviceType.COLD || o.type === DeviceType.HUMIDITY,
-  )
+  @ValidateIf((o) => o.type !== DeviceType.PRESSURE)
   @IsString()
   @IsNotEmpty()
   oem?: string;

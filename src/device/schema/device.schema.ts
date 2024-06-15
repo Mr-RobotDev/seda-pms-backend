@@ -18,7 +18,7 @@ export class Device extends Document {
     index: true,
     sparse: true,
     required: function (this: Device) {
-      return this.type === DeviceType.COLD || this.type === DeviceType.HUMIDITY;
+      return this.type !== DeviceType.PRESSURE;
     },
   })
   oem?: string;

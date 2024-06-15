@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Alert } from './schema/alert.schema';
+import { Trigger } from './schema/trigger.schema';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
@@ -13,6 +14,8 @@ import { Result } from '../common/interfaces/result.interface';
 
 @Injectable()
 export class AlertService {
+  private conditionStartTimes = new Map<string, Date>();
+
   constructor(
     @InjectModel(Alert.name)
     private readonly alertModel: PaginatedModel<Alert>,
@@ -38,31 +41,58 @@ export class AlertService {
   shouldSendAlert(
     alert: Alert,
     currentDay: WeekDay,
-    filedValue: number,
+    fieldValue: number,
   ): boolean {
-    if (
+    const alertKey = `${alert.id}-${fieldValue}`;
+
+    if (this.isScheduleMatched(alert, currentDay)) {
+      if (this.isConditionMet(alert.trigger, fieldValue)) {
+        if (!this.conditionStartTimes.has(alertKey)) {
+          this.conditionStartTimes.set(alertKey, new Date());
+        }
+
+        const startTime = this.conditionStartTimes.get(alertKey);
+        const now = new Date();
+        const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
+
+        if (duration >= alert.trigger.duration) {
+          this.conditionStartTimes.delete(alertKey);
+          return true;
+        }
+      } else {
+        this.conditionStartTimes.delete(alertKey);
+      }
+    }
+    return false;
+  }
+
+  private isScheduleMatched(alert: Alert, currentDay: WeekDay): boolean {
+    return (
       alert.scheduleType === ScheduleType.EVERYDAY ||
       (alert.scheduleType === ScheduleType.WEEKDAYS &&
         ![WeekDay.SATURDAY, WeekDay.SUNDAY].includes(currentDay)) ||
       (alert.scheduleType === ScheduleType.CUSTOM &&
         alert.weekdays.includes(currentDay))
-    ) {
-      if (alert.trigger.range.type === RangeType.INSIDE) {
+    );
+  }
+
+  private isConditionMet(trigger: Trigger, fieldValue: number): boolean {
+    switch (trigger.range.type) {
+      case RangeType.INSIDE:
         return (
-          filedValue >= alert.trigger.range.lower &&
-          filedValue <= alert.trigger.range.upper
+          fieldValue >= trigger.range.lower && fieldValue <= trigger.range.upper
         );
-      } else if (alert.trigger.range.type === RangeType.OUTSIDE) {
+      case RangeType.OUTSIDE:
         return (
-          filedValue < alert.trigger.range.lower ||
-          filedValue > alert.trigger.range.upper
+          fieldValue < trigger.range.lower || fieldValue > trigger.range.upper
         );
-      } else if (alert.trigger.range.type === RangeType.LOWER) {
-        return filedValue < alert.trigger.range.lower;
-      }
-      return filedValue > alert.trigger.range.upper;
+      case RangeType.LOWER:
+        return fieldValue < trigger.range.lower;
+      case RangeType.UPPER:
+        return fieldValue > trigger.range.upper;
+      default:
+        return false;
     }
-    return false;
   }
 
   async createAlert(createAlertDto: CreateAlertDto): Promise<Alert> {

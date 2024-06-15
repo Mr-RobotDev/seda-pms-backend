@@ -109,8 +109,7 @@ export class EventService implements OnModuleInit {
         { id: 'id', title: 'Event ID' },
         { id: 'deviceName', title: 'Device Name' },
         { id: 'deviceType', title: 'Device Type' },
-        ...(device.type === DeviceType.COLD ||
-        device.type === DeviceType.HUMIDITY
+        ...(device.type !== DeviceType.PRESSURE
           ? [
               { id: 'temperature', title: 'Temperature (°C)' },
               { id: 'relativeHumidity', title: 'Relative Humidity (%)' },
@@ -128,10 +127,10 @@ export class EventService implements OnModuleInit {
       id: event.id,
       deviceName: device.name,
       deviceType:
-        device.type === 'humidity' || device.type === 'cold'
+        device.type !== DeviceType.PRESSURE
           ? 'Humidity/Temperature'
           : 'Pressure',
-      ...(device.type === DeviceType.COLD || device.type === DeviceType.HUMIDITY
+      ...(device.type !== DeviceType.PRESSURE
         ? {
             temperature: event.temperature,
             relativeHumidity: event.relativeHumidity,

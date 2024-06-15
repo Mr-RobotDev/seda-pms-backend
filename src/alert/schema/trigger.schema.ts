@@ -20,6 +20,12 @@ export class Trigger extends Document {
     required: true,
   })
   range: Range;
+
+  @Prop({
+    type: Number,
+    required: true,
+  })
+  duration: number;
 }
 
 export const TriggerSchema = SchemaFactory.createForClass(Trigger);

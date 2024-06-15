@@ -1,6 +1,7 @@
 export enum DeviceType {
   HUMIDITY = 'humidity',
-  COLD = 'cold',
+  FRIDGE = 'fridge',
+  FREEZER = 'freezer',
   PRESSURE = 'pressure',
 }
 
