@@ -24,13 +24,6 @@ export class Alert extends Document {
   name: string;
 
   @Prop({
-    type: Types.ObjectId,
-    ref: Device.name,
-    required: true,
-  })
-  device: Device;
-
-  @Prop({
     type: [String],
     required: true,
   })
@@ -63,9 +56,18 @@ export class Alert extends Document {
     default: true,
   })
   enabled: boolean;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Device.name,
+    required: true,
+  })
+  device: Device;
 }
 
 export const AlertSchema = SchemaFactory.createForClass(Alert);
+
+AlertSchema.index({ device: 1 }, { unique: true });
 
 AlertSchema.plugin(toJSON);
 AlertSchema.plugin(paginate);

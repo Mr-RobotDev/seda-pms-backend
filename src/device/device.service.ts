@@ -199,12 +199,17 @@ export class DeviceService {
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
+    const alert = await this.alertService.getAlertByDevice(id);
     await this.logService.createLog(user, {
       action: Action.VIEWED,
       page: Page.DEVICE,
       device: id,
     });
-    return device;
+
+    return {
+      ...device.toJSON(),
+      ...(alert && { alert: { range: alert.trigger.range } }),
+    };
   }
 
   async deviceStats(user: string): Promise<{
