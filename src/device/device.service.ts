@@ -208,7 +208,12 @@ export class DeviceService {
 
     return {
       ...device.toJSON(),
-      ...(alert && { alert: { range: alert.trigger.range } }),
+      ...(alert && {
+        alert: {
+          field: alert.trigger.field,
+          range: alert.trigger.range,
+        },
+      }),
     };
   }
 
