@@ -109,9 +109,12 @@ export class WebhookService {
     const device = await this.deviceService.getDeviceBySlug(pressureDeviceSlug);
 
     const now = new Date();
-    const fiveMinutesAgo = new Date(now.getTime() - 300000);
 
-    if (!device.lastUpdated || device.lastUpdated <= fiveMinutesAgo) {
+    const randomMinutes = Math.floor(Math.random() * 16) + 5;
+    const randomInterval = randomMinutes * 60000;
+    const lastUpdateThreshold = new Date(now.getTime() - randomInterval);
+
+    if (!device.lastUpdated || device.lastUpdated <= lastUpdateThreshold) {
       await this.deviceService.updateDeviceBySlug(
         pressureDeviceSlug,
         pressure,
