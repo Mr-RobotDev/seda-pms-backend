@@ -190,7 +190,7 @@ export class DeviceService {
           ],
         }),
       },
-      { page, limit, sortBy: '-lastUpdated', projection: '-createdAt -slug' },
+      { page, limit, sortBy: 'name', projection: '-createdAt -slug' },
     );
   }
 
