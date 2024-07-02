@@ -194,29 +194,6 @@ export class DeviceService {
     );
   }
 
-  async device(user: string, id: string): Promise<Device> {
-    const device = await this.deviceModel.findById(id, '-createdAt -slug');
-    if (!device) {
-      throw new NotFoundException(`Device #${id} not found`);
-    }
-    const alert = await this.alertService.getAlertByDevice(id);
-    await this.logService.createLog(user, {
-      action: Action.VIEWED,
-      page: Page.DEVICE,
-      device: id,
-    });
-
-    return {
-      ...device.toJSON(),
-      ...(alert && {
-        alert: {
-          field: alert.trigger.field,
-          range: alert.trigger.range,
-        },
-      }),
-    };
-  }
-
   async deviceStats(user: string): Promise<{
     totalDevices: number;
     highestTemperature: number;
@@ -262,6 +239,40 @@ export class DeviceService {
     });
 
     return stats;
+  }
+
+  async device(user: string, id: string): Promise<Device> {
+    const device = await this.deviceModel.findById(id, '-createdAt -slug');
+    if (!device) {
+      throw new NotFoundException(`Device #${id} not found`);
+    }
+    const alert = await this.alertService.getAlertByDevice(id);
+    await this.logService.createLog(user, {
+      action: Action.VIEWED,
+      page: Page.DEVICE,
+      device: id,
+    });
+
+    return {
+      ...device.toJSON(),
+      ...(alert && {
+        alert: {
+          field: alert.trigger.field,
+          range: alert.trigger.range,
+        },
+      }),
+    };
+  }
+
+  async deviceInfo(oem: string): Promise<Device> {
+    const device = await this.deviceModel.findOne(
+      { oem },
+      '-createdAt -slug -location -lastUpdated -isOffline -signalStrength',
+    );
+    if (!device) {
+      throw new NotFoundException(`Device #${oem} not found`);
+    }
+    return device;
   }
 
   async updateDevice(

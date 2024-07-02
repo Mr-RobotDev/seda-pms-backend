@@ -58,6 +58,11 @@ export class DeviceController {
     return this.deviceService.device(account.sub, device);
   }
 
+  @Get(':oem/info')
+  deviceInfo(@Param('oem') oem: string) {
+    return this.deviceService.deviceInfo(oem);
+  }
+
   @Roles(Role.ADMIN)
   @Patch(':device')
   updateDevice(
