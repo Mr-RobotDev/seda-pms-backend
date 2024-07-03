@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sendGrid from '@sendgrid/mail';
 import { AttachmentData } from '../interfaces/attachment-data.interface';
@@ -7,6 +7,31 @@ import { AttachmentData } from '../interfaces/attachment-data.interface';
 export class MailService {
   constructor(private readonly configService: ConfigService) {
     sendGrid.setApiKey(this.configService.get<string>('sendgrid.key'));
+  }
+
+  async sendForgotPasswordEmail(
+    to: string,
+    name: string,
+    url: string,
+  ): Promise<boolean> {
+    try {
+      const mail: sendGrid.MailDataRequired = {
+        to,
+        from: `Origin Smart Controls <${this.configService.get<string>('sendgrid.from')}>`,
+        dynamicTemplateData: {
+          name,
+          url,
+        },
+        templateId: this.configService.get<string>(
+          'sendgrid.resetPasswordTemplate',
+        ),
+      };
+
+      const transport = await sendGrid.send(mail);
+      return transport[0].statusCode === HttpStatus.ACCEPTED;
+    } catch {
+      return false;
+    }
   }
 
   async sendDashboardReport(
