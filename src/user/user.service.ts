@@ -146,4 +146,11 @@ export class UserService {
     user.password = updatePasswordDto.newPassword;
     await user.save();
   }
+
+  async removeUser(id: string): Promise<void> {
+    const user = await this.userModel.findByIdAndDelete(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+  }
 }
