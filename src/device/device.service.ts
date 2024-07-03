@@ -178,7 +178,7 @@ export class DeviceService {
       page: Page.DEVICES,
     });
 
-    const types = type ? type.split(',').map((type) => type.trim()) : [];
+    const types = Array.isArray(type) ? type : [type];
 
     return this.deviceModel.paginate(
       {

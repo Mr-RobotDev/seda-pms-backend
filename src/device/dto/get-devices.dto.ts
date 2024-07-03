@@ -3,8 +3,8 @@ import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 
 export class GetDevicesQueryDto extends PaginationQueryDto {
   @IsOptional()
-  @IsString()
-  type?: string;
+  @IsString({ each: true })
+  type?: string[];
 
   @IsOptional()
   @IsString()
