@@ -101,7 +101,7 @@ export class AuthService {
 
     const link = `${this.configService.get(
       'frontend.url',
-    )}/forgot-password?key=${key}`;
+    )}/reset-password?key=${key}`;
 
     const sent = await this.mailService.sendForgotPasswordEmail(
       forgetPasswordDto.email,
