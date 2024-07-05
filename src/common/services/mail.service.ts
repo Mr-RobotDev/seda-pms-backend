@@ -23,7 +23,7 @@ export class MailService {
           url,
         },
         templateId: this.configService.get<string>(
-          'sendgrid.resetPasswordTemplate',
+          'sendgrid.forgotPasswordTemplate',
         ),
       };
 
