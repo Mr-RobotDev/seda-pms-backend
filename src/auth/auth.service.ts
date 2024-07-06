@@ -39,7 +39,7 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
     if (!user.isActive) {
-      throw new BadRequestException('Your account is not active yet!');
+      throw new BadRequestException('Your account is not active!');
     }
 
     await this.logService.createLog(user.id, {

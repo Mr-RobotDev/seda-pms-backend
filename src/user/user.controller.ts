@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -100,8 +99,8 @@ export class UserController {
   }
 
   @Roles(Role.ADMIN)
-  @Delete(':user')
-  removeUser(@Param('user', IsObjectIdPipe) user: string) {
-    return this.userService.removeUser(user);
+  @Patch(':user/toggle-active')
+  toggleUser(@Param('user', IsObjectIdPipe) user: string) {
+    return this.userService.toggleUser(user);
   }
 }
