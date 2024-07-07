@@ -92,7 +92,7 @@ export class CardService {
         projection: '-createdAt -dashboard',
         populate: {
           path: 'devices',
-          select: 'name',
+          select: 'name type',
         },
       },
     );
