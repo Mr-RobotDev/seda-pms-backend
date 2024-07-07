@@ -2,6 +2,7 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsInt,
+  IsMongoId,
   IsNotEmpty,
   IsString,
   Max,
@@ -44,5 +45,6 @@ export class CreateCardDto {
 
   @IsArray()
   @ArrayNotEmpty()
+  @IsMongoId({ each: true })
   devices: string[];
 }
