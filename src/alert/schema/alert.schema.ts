@@ -67,8 +67,6 @@ export class Alert extends Document {
 
 export const AlertSchema = SchemaFactory.createForClass(Alert);
 
-AlertSchema.index({ device: 1 }, { unique: true });
-
 AlertSchema.plugin(toJSON);
 AlertSchema.plugin(paginate);
 AlertSchema.plugin(paginatedAggregation);

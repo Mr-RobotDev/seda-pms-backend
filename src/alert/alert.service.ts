@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Alert } from './schema/alert.schema';
 import { Trigger } from './schema/trigger.schema';
@@ -104,12 +100,6 @@ export class AlertService {
   }
 
   async createAlert(createAlertDto: CreateAlertDto): Promise<Alert> {
-    const alert = await this.alertModel.findOne({
-      device: createAlertDto.device,
-    });
-    if (alert) {
-      throw new BadRequestException('An alert already exists for this device');
-    }
     const newAlert = await this.alertModel.create(createAlertDto);
     return this.getAlert(newAlert.id);
   }
