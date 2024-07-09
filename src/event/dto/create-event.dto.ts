@@ -1,12 +1,9 @@
-import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateEventDto {
   @IsMongoId()
   @IsNotEmpty()
   device: string;
-
-  @IsString()
-  oem?: string;
 
   @IsNumber()
   temperature?: number;
