@@ -15,6 +15,7 @@ import { Action } from '../log/enums/action.enum';
 import { Page } from '../log/enums/page.enum';
 import { Field } from '../common/enums/field.enum';
 import { WeekDay } from '../common/enums/week-day.enum';
+import { DeviceResponse } from './interfaces/device-response.interface';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
 
@@ -70,9 +71,14 @@ export class DeviceService {
     const fieldType = this.getFieldType(updatedFields);
     const updatedValue = this.getUpdatedValue(updatedFields);
 
-    const alertPromises = alerts.map((alert) => {
-      if (this.alertService.shouldSendAlert(alert, currentDay, updatedValue)) {
-        return this.sendAlertEmail(alert, fieldType, updatedValue);
+    const alertPromises = alerts.map(async (alert) => {
+      const shouldSend = await this.alertService.shouldSendAlert(
+        alert,
+        currentDay,
+        updatedValue,
+      );
+      if (shouldSend) {
+        await this.sendAlertEmail(alert, fieldType, updatedValue);
       }
     });
 
@@ -246,12 +252,12 @@ export class DeviceService {
     return stats;
   }
 
-  async device(user: string, id: string): Promise<Device> {
+  async device(user: string, id: string): Promise<DeviceResponse> {
     const device = await this.deviceModel.findById(id, '-createdAt -slug');
     if (!device) {
       throw new NotFoundException(`Device #${id} not found`);
     }
-    const alert = await this.alertService.getAlertByDevice(id);
+    const alerts = await this.alertService.getAlertsByDevice(id);
     await this.logService.createLog(user, {
       action: Action.VIEWED,
       page: Page.DEVICE,
@@ -260,12 +266,10 @@ export class DeviceService {
 
     return {
       ...device.toJSON(),
-      ...(alert && {
-        alert: {
-          field: alert.trigger.field,
-          range: alert.trigger.range,
-        },
-      }),
+      alerts: alerts.map((alert) => ({
+        field: alert.trigger.field,
+        range: alert.trigger.range,
+      })),
     };
   }
 
