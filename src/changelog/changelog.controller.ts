@@ -13,7 +13,6 @@ import { GetChangeLogsQueryDto } from './dto/get-changelogs.dto';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 
-@Roles(Role.ADMIN)
 @Controller({
   path: 'changelogs',
   version: '1',
@@ -21,12 +20,14 @@ import { Role } from '../common/enums/role.enum';
 export class ChangelogController {
   constructor(private readonly changelogService: ChangelogService) {}
 
+  @Roles(Role.ADMIN)
   @Post()
   @HttpCode(HttpStatus.OK)
   async createChangeLog(@Body() createChangeLog: CreateChangeLogDto) {
     return this.changelogService.createChangeLog(createChangeLog);
   }
 
+  @Roles(Role.ADMIN)
   @Get()
   async getChangeLogs(@Query() getChangeLogsDto: GetChangeLogsQueryDto) {
     return this.changelogService.getChangeLogs(getChangeLogsDto);
