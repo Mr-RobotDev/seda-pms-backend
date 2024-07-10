@@ -38,11 +38,11 @@ export class AlertService {
     );
   }
 
-  shouldSendAlert(
+  async shouldSendAlert(
     alert: Alert,
     currentDay: WeekDay,
     fieldValue: number,
-  ): boolean {
+  ): Promise<boolean> {
     const alertKey = `${alert.id}-${fieldValue}`;
 
     if (this.isScheduleMatched(alert, currentDay)) {
@@ -57,13 +57,19 @@ export class AlertService {
 
         if (duration >= alert.trigger.duration) {
           this.conditionStartTimes.delete(alertKey);
+          await this.updateAlertActiveStatus(alert.id, true);
           return true;
         }
       } else {
         this.conditionStartTimes.delete(alertKey);
+        await this.updateAlertActiveStatus(alert.id, false);
       }
     }
     return false;
+  }
+
+  private async updateAlertActiveStatus(id: string, status: boolean) {
+    await this.alertModel.findByIdAndUpdate(id, { active: status });
   }
 
   private isScheduleMatched(alert: Alert, currentDay: WeekDay): boolean {
@@ -95,8 +101,8 @@ export class AlertService {
     }
   }
 
-  async getAlertByDevice(device: string): Promise<Alert> {
-    return this.alertModel.findOne({ device });
+  async getAlertsByDevice(device: string): Promise<Alert[]> {
+    return this.alertModel.find({ device });
   }
 
   async createAlert(createAlertDto: CreateAlertDto): Promise<Alert> {
@@ -120,6 +126,20 @@ export class AlertService {
         ],
       },
     );
+  }
+
+  async getAlertsStats() {
+    const alerts = await this.alertModel.find({}).select('name active');
+
+    const activeAlerts = alerts.filter((alert) => alert.active);
+    const nonActiveAlerts = alerts.filter((alert) => !alert.active);
+
+    return {
+      totalActiveAlerts: activeAlerts.length,
+      totalNonActiveAlerts: nonActiveAlerts.length,
+      activeAlerts: activeAlerts.map((alert) => alert.name),
+      nonActiveAlerts: nonActiveAlerts.map((alert) => alert.name),
+    };
   }
 
   async getAlert(id: string): Promise<Alert> {
