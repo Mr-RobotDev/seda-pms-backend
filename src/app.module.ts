@@ -21,6 +21,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { CardModule } from './card/card.module';
 import { ReportModule } from './report/report.module';
 import { AlertModule } from './alert/alert.module';
+import { ChangelogModule } from './changelog/changelog.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { AlertModule } from './alert/alert.module';
     CardModule,
     AlertModule,
     ReportModule,
+    ChangelogModule,
   ],
   controllers: [AppController],
   providers: [
