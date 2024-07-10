@@ -1,11 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Alert } from './schema/alert.schema';
 import { Trigger } from './schema/trigger.schema';
+import { DeviceService } from '../device/device.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { RangeType } from './enums/range-type.enum';
+import { DeviceType } from '../device/enums/device-type.enum';
 import { Field } from '../common/enums/field.enum';
 import { WeekDay } from '../common/enums/week-day.enum';
 import { ScheduleType } from '../common/enums/schedule-type.enum';
@@ -19,6 +27,8 @@ export class AlertService {
   constructor(
     @InjectModel(Alert.name)
     private readonly alertModel: PaginatedModel<Alert>,
+    @Inject(forwardRef(() => DeviceService))
+    private readonly deviceService: DeviceService,
   ) {}
 
   async filterAlerts(device: string, field: Field): Promise<Alert[]> {
@@ -106,7 +116,61 @@ export class AlertService {
   }
 
   async createAlert(createAlertDto: CreateAlertDto): Promise<Alert> {
+    const device = await this.deviceService.getDeviceById(
+      createAlertDto.device,
+    );
+    if (!device) {
+      throw new NotFoundException(`Device #${createAlertDto.device} not found`);
+    }
+
+    switch (createAlertDto.trigger.field) {
+      case Field.PRESSURE:
+        if (device.type === DeviceType.PRESSURE && device.pressureAlert) {
+          throw new BadRequestException(
+            `Pressure alert for device #${createAlertDto.device} already exists`,
+          );
+        }
+        break;
+      case Field.TEMPERATURE:
+        if (device.type !== DeviceType.PRESSURE && device.temperatureAlert) {
+          throw new BadRequestException(
+            `Temperature alert for device #${createAlertDto.device} already exists`,
+          );
+        }
+        break;
+      case Field.RELATIVE_HUMIDITY:
+        if (device.type !== DeviceType.PRESSURE && device.humidityAlert) {
+          throw new BadRequestException(
+            `Humidity alert for device #${createAlertDto.device} already exists`,
+          );
+        }
+        break;
+      default:
+        throw new BadRequestException(
+          `Unsupported field ${createAlertDto.trigger.field}`,
+        );
+    }
+
     const newAlert = await this.alertModel.create(createAlertDto);
+
+    switch (createAlertDto.trigger.field) {
+      case Field.PRESSURE:
+        await this.deviceService.updateDeviceAlertStatus(device.id, {
+          pressureAlert: true,
+        });
+        break;
+      case Field.TEMPERATURE:
+        await this.deviceService.updateDeviceAlertStatus(device.id, {
+          temperatureAlert: true,
+        });
+        break;
+      case Field.RELATIVE_HUMIDITY:
+        await this.deviceService.updateDeviceAlertStatus(device.id, {
+          humidityAlert: true,
+        });
+        break;
+    }
+
     return this.getAlert(newAlert.id);
   }
 
@@ -178,15 +242,42 @@ export class AlertService {
   }
 
   async removeAlert(id: string): Promise<void> {
-    const result = await this.alertModel.findByIdAndDelete(id, {
-      projection: '-createdAt',
-      populate: {
-        path: 'device',
-        select: 'name lastUpdated temperature relativeHumidity pressure',
-      },
-    });
-    if (!result) {
+    const alert = await this.alertModel.findById(id);
+
+    if (!alert) {
       throw new NotFoundException(`Alert #${id} not found`);
     }
+
+    const device = await this.deviceService.getDeviceById(alert.device);
+
+    if (!device) {
+      throw new NotFoundException(`Device #${alert.device} not found`);
+    }
+
+    switch (alert.trigger.field) {
+      case Field.PRESSURE:
+        if (device.pressureAlert) {
+          await this.deviceService.updateDeviceAlertStatus(device.id, {
+            pressureAlert: false,
+          });
+        }
+        break;
+      case Field.TEMPERATURE:
+        if (device.temperatureAlert) {
+          await this.deviceService.updateDeviceAlertStatus(device.id, {
+            temperatureAlert: false,
+          });
+        }
+        break;
+      case Field.RELATIVE_HUMIDITY:
+        if (device.humidityAlert) {
+          await this.deviceService.updateDeviceAlertStatus(device.id, {
+            humidityAlert: false,
+          });
+        }
+        break;
+    }
+
+    await this.alertModel.deleteOne({ _id: id });
   }
 }

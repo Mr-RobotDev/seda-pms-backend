@@ -67,6 +67,7 @@ export class Alert extends Document {
     type: Types.ObjectId,
     ref: Device.name,
     required: true,
+    index: true,
   })
   device: Device;
 }

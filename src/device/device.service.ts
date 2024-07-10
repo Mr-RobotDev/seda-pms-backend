@@ -11,6 +11,7 @@ import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { GetDevicesQueryDto } from './dto/get-devices.dto';
 import { UpdateDeviceByOem } from './dto/update-device-by-oem.dto';
+import { UpdateDeviceAlertStatus } from './dto/update-device-alert-status.dto';
 import { Action } from '../log/enums/action.enum';
 import { Page } from '../log/enums/page.enum';
 import { Field } from '../common/enums/field.enum';
@@ -125,26 +126,6 @@ export class DeviceService {
       default:
         return '';
     }
-  }
-
-  async getDeviceById(device: string): Promise<Device> {
-    return this.deviceModel.findById(device);
-  }
-
-  async getDeviceBySlug(slug: string): Promise<Device> {
-    return this.deviceModel.findOne({ slug });
-  }
-
-  async updateDeviceBySlug(
-    slug: string,
-    pressure: number,
-    lastUpdated?: Date,
-  ): Promise<Device> {
-    return this.deviceModel.findOneAndUpdate(
-      { slug },
-      { pressure, ...(lastUpdated && { lastUpdated }) },
-      { new: true },
-    );
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS, { timeZone: 'Europe/London' })
@@ -284,6 +265,14 @@ export class DeviceService {
     return device;
   }
 
+  async getDeviceById(device: string | Device): Promise<Device> {
+    return this.deviceModel.findById(device);
+  }
+
+  async getDeviceBySlug(slug: string): Promise<Device> {
+    return this.deviceModel.findOne({ slug });
+  }
+
   async updateDevice(
     user: string,
     id: string,
@@ -308,21 +297,6 @@ export class DeviceService {
     return device;
   }
 
-  async removeDevice(user: string, id: string): Promise<Device> {
-    const device = await this.deviceModel.findByIdAndDelete(id, {
-      projection: '-createdAt -slug',
-    });
-    if (!device) {
-      throw new NotFoundException(`Device #${id} not found`);
-    }
-    await this.logService.createLog(user, {
-      action: Action.DELETED,
-      page: Page.DEVICE,
-      device: id,
-    });
-    return device;
-  }
-
   async updateDeviceByOem(
     oem: string,
     updateDeviceByOem: UpdateDeviceByOem,
@@ -336,5 +310,41 @@ export class DeviceService {
         new: true,
       },
     );
+  }
+
+  async updateDeviceBySlug(
+    slug: string,
+    pressure: number,
+    lastUpdated?: Date,
+  ): Promise<Device> {
+    return this.deviceModel.findOneAndUpdate(
+      { slug },
+      { pressure, ...(lastUpdated && { lastUpdated }) },
+      { new: true },
+    );
+  }
+
+  async updateDeviceAlertStatus(
+    id: string,
+    updateDeviceAlertStatus: UpdateDeviceAlertStatus,
+  ): Promise<void> {
+    await this.deviceModel.findByIdAndUpdate(id, updateDeviceAlertStatus, {
+      new: true,
+    });
+  }
+
+  async removeDevice(user: string, id: string): Promise<Device> {
+    const device = await this.deviceModel.findByIdAndDelete(id, {
+      projection: '-createdAt -slug',
+    });
+    if (!device) {
+      throw new NotFoundException(`Device #${id} not found`);
+    }
+    await this.logService.createLog(user, {
+      action: Action.DELETED,
+      page: Page.DEVICE,
+      device: id,
+    });
+    return device;
   }
 }

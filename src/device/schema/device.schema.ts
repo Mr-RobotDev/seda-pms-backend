@@ -80,6 +80,24 @@ export class Device extends Document {
     required: true,
   })
   location: Location;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  temperatureAlert?: boolean;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  humidityAlert?: boolean;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  pressureAlert?: boolean;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);
