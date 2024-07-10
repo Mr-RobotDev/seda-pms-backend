@@ -37,14 +37,14 @@ export class AlertController {
     return this.alertService.getAlerts(query);
   }
 
-  @Get(':alert')
-  getAlert(@Param('alert', IsObjectIdPipe) alert: string) {
-    return this.alertService.getAlert(alert);
-  }
-
   @Get('stats')
   getAlertsStats() {
     return this.alertService.getAlertsStats();
+  }
+
+  @Get(':alert')
+  getAlert(@Param('alert', IsObjectIdPipe) alert: string) {
+    return this.alertService.getAlert(alert);
   }
 
   @Roles(Role.ADMIN)
