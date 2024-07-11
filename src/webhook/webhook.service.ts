@@ -110,7 +110,7 @@ export class WebhookService {
 
     const now = new Date();
 
-    const randomMinutes = Math.floor(Math.random() * 16) + 5;
+    const randomMinutes = Math.floor(Math.random() * 16) + 15;
     const randomInterval = randomMinutes * 60000;
     const lastUpdateThreshold = new Date(now.getTime() - randomInterval);
 
