@@ -53,10 +53,9 @@ export class AlertService {
   ): Promise<boolean> {
     if (this.isScheduleMatched(alert, currentDay)) {
       if (this.isConditionMet(alert.trigger, fieldValue)) {
-        if (!alert.conditionStartTime) {
-          alert.conditionStartTime = new Date();
+        if (alert.conditionStartTime === null) {
           await this.alertModel.findByIdAndUpdate(alert.id, {
-            conditionStartTime: alert.conditionStartTime,
+            conditionStartTime: new Date(),
             active: true,
           });
         }
