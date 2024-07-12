@@ -125,7 +125,11 @@ export class WebhookService {
         pressure,
       });
     } else {
-      await this.deviceService.updateDeviceBySlug(pressureDeviceSlug, pressure);
+      await this.deviceService.updateDeviceBySlug(
+        pressureDeviceSlug,
+        pressure,
+        now,
+      );
     }
   }
 }
