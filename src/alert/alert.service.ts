@@ -22,8 +22,6 @@ import { Result } from '../common/interfaces/result.interface';
 
 @Injectable()
 export class AlertService {
-  private conditionStartTimes = new Map<string, Date>();
-
   constructor(
     @InjectModel(Alert.name)
     private readonly alertModel: PaginatedModel<Alert>,
@@ -53,33 +51,38 @@ export class AlertService {
     currentDay: WeekDay,
     fieldValue: number,
   ): Promise<boolean> {
-    const alertKey = `${alert.id}-${fieldValue}`;
-
     if (this.isScheduleMatched(alert, currentDay)) {
       if (this.isConditionMet(alert.trigger, fieldValue)) {
-        if (!this.conditionStartTimes.has(alertKey)) {
-          this.conditionStartTimes.set(alertKey, new Date());
+        if (!alert.conditionStartTime) {
+          alert.conditionStartTime = new Date();
+          await this.alertModel.findByIdAndUpdate(alert.id, {
+            conditionStartTime: alert.conditionStartTime,
+          });
         }
 
-        const startTime = this.conditionStartTimes.get(alertKey);
+        const startTime = new Date(alert.conditionStartTime);
         const now = new Date();
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
 
         if (duration >= alert.trigger.duration) {
-          this.conditionStartTimes.delete(alertKey);
-          await this.updateAlertActiveStatus(alert.id, true);
+          await this.alertModel.findByIdAndUpdate(alert.id, {
+            conditionStartTime: null,
+            active: true,
+          });
           return true;
         }
       } else {
-        this.conditionStartTimes.delete(alertKey);
-        await this.updateAlertActiveStatus(alert.id, false);
+        await this.resetAlertCondition(alert.id);
       }
     }
     return false;
   }
 
-  private async updateAlertActiveStatus(id: string, status: boolean) {
-    await this.alertModel.findByIdAndUpdate(id, { active: status });
+  async resetAlertCondition(alert: string) {
+    await this.alertModel.findByIdAndUpdate(alert, {
+      conditionStartTime: null,
+      active: false,
+    });
   }
 
   private isScheduleMatched(alert: Alert, currentDay: WeekDay): boolean {
@@ -202,7 +205,6 @@ export class AlertService {
       totalActiveAlerts: activeAlerts.length,
       totalNonActiveAlerts: nonActiveAlerts.length,
       activeAlerts: activeAlerts.map((alert) => alert.name),
-      nonActiveAlerts: nonActiveAlerts.map((alert) => alert.name),
     };
   }
 

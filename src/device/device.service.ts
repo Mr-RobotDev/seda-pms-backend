@@ -69,7 +69,7 @@ export class DeviceService {
     updatedFields: any,
     currentDay: WeekDay,
   ) {
-    const fieldType = this.getFieldType(updatedFields);
+    const field = this.getFieldType(updatedFields);
     const updatedValue = this.getUpdatedValue(updatedFields);
 
     const alertPromises = alerts.map(async (alert) => {
@@ -79,7 +79,9 @@ export class DeviceService {
         updatedValue,
       );
       if (shouldSend) {
-        await this.sendAlertEmail(alert, fieldType, updatedValue);
+        await this.sendAlertEmail(alert, field, updatedValue);
+      } else {
+        await this.alertService.resetAlertCondition(alert.id);
       }
     });
 
@@ -102,6 +104,8 @@ export class DeviceService {
         unit,
         updated,
       );
+
+      await this.alertService.resetAlertCondition(alert.id);
     } catch (error) {
       console.error('Failed to send alert email:', error);
     }
