@@ -57,6 +57,7 @@ export class AlertService {
           alert.conditionStartTime = new Date();
           await this.alertModel.findByIdAndUpdate(alert.id, {
             conditionStartTime: alert.conditionStartTime,
+            active: true,
           });
         }
 
@@ -67,7 +68,6 @@ export class AlertService {
         if (duration >= alert.trigger.duration) {
           await this.alertModel.findByIdAndUpdate(alert.id, {
             conditionStartTime: null,
-            active: true,
           });
           return true;
         }
