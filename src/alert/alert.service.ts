@@ -54,8 +54,8 @@ export class AlertService {
           field,
           value,
         );
+        await this.deactivateAlert(alert.id);
       }
-      await this.deactivateAlert(alert.id);
     });
 
     await Promise.all(alertPromises);
