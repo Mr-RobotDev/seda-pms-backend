@@ -6,9 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { format } from 'date-fns';
 import { Alert } from './schema/alert.schema';
 import { Trigger } from './schema/trigger.schema';
 import { DeviceService } from '../device/device.service';
+import { MailService } from '../common/services/mail.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
@@ -19,6 +21,7 @@ import { WeekDay } from '../common/enums/week-day.enum';
 import { ScheduleType } from '../common/enums/schedule-type.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AlertService {
@@ -27,61 +30,117 @@ export class AlertService {
     private readonly alertModel: PaginatedModel<Alert>,
     @Inject(forwardRef(() => DeviceService))
     private readonly deviceService: DeviceService,
+    private readonly mailService: MailService,
   ) {}
 
-  async filterAlerts(device: string, field: Field): Promise<Alert[]> {
-    return this.alertModel.find(
-      {
-        device,
-        enabled: true,
-        'trigger.field': field,
-      },
-      '-createdAt',
-      {
-        populate: {
-          path: 'device',
-          select: 'name lastUpdated',
-        },
-      },
-    );
+  @Cron(CronExpression.EVERY_MINUTE)
+  async sendActiveAlerts() {
+    const alerts = await this.alertModel.find({ active: true });
+
+    const alertPromises = alerts.map(async (alert) => {
+      const device = await this.deviceService.getDeviceById(alert.device);
+      const field = alert.trigger.field;
+      const value = device[field];
+
+      const startTime = new Date(alert.conditionStartTime);
+      const now = new Date();
+      const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
+
+      if (duration >= alert.trigger.duration) {
+        await this.sendAlertEmail(
+          alert,
+          device.name,
+          device.lastUpdated,
+          field,
+          value,
+        );
+      }
+      await this.deactivateAlert(alert.id);
+    });
+
+    await Promise.all(alertPromises);
   }
 
-  async shouldSendAlert(
+  async handleUpdateChange(change: any) {
+    const device = change.documentKey._id;
+    const updatedFields = change.updateDescription.updatedFields;
+
+    const field = this.getFieldType(updatedFields);
+    if (field) {
+      const alerts = await this.filterAlerts(device.toString(), field);
+
+      const currentDay = format(new Date(), 'EEEE').toLowerCase() as WeekDay;
+      await this.processAlerts(alerts, updatedFields, currentDay);
+    }
+  }
+
+  async filterAlerts(device: string, field: Field): Promise<Alert[]> {
+    return this.alertModel.find({
+      device,
+      enabled: true,
+      'trigger.field': field,
+    });
+  }
+
+  private async processAlerts(
+    alerts: Alert[],
+    updatedFields: any,
+    currentDay: WeekDay,
+  ) {
+    const value = this.getUpdatedValue(updatedFields);
+    const alertPromises = alerts.map(async (alert) => {
+      await this.activateAlert(alert, currentDay, value);
+    });
+
+    await Promise.all(alertPromises);
+  }
+
+  async activateAlert(
     alert: Alert,
     currentDay: WeekDay,
-    fieldValue: number,
-  ): Promise<boolean> {
-    if (this.isScheduleMatched(alert, currentDay)) {
-      if (this.isConditionMet(alert.trigger, fieldValue)) {
-        if (alert.conditionStartTime === null) {
-          await this.alertModel.findByIdAndUpdate(alert.id, {
-            conditionStartTime: new Date(),
-            active: true,
-          });
-        }
-
-        const startTime = new Date(alert.conditionStartTime);
-        const now = new Date();
-        const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
-
-        if (duration >= alert.trigger.duration) {
-          await this.alertModel.findByIdAndUpdate(alert.id, {
-            conditionStartTime: null,
-          });
-          return true;
-        }
-      } else {
-        await this.resetAlertCondition(alert.id);
-      }
+    value: number,
+  ): Promise<void> {
+    if (
+      this.isScheduleMatched(alert, currentDay) &&
+      this.isConditionMet(alert.trigger, value)
+    ) {
+      await this.alertModel.findByIdAndUpdate(alert.id, {
+        conditionStartTime: new Date(),
+        active: true,
+      });
+    } else {
+      await this.deactivateAlert(alert.id);
     }
-    return false;
   }
 
-  async resetAlertCondition(alert: string) {
+  async deactivateAlert(alert: string) {
     await this.alertModel.findByIdAndUpdate(alert, {
       conditionStartTime: null,
       active: false,
     });
+  }
+
+  private async sendAlertEmail(
+    alert: Alert,
+    deviceName: string,
+    lastUpdated: Date,
+    field: Field,
+    value: number,
+  ) {
+    try {
+      const unit = this.getFieldUnit(field);
+      const updated = format(lastUpdated, 'dd/MM/yyyy HH:mm:ss');
+      await this.mailService.sendDeviceAlert(
+        alert.recipients,
+        deviceName,
+        field,
+        value,
+        unit,
+        updated,
+      );
+    } catch (error) {
+      console.error('Failed to send alert email:', error);
+    }
   }
 
   private isScheduleMatched(alert: Alert, currentDay: WeekDay): boolean {
@@ -94,22 +153,46 @@ export class AlertService {
     );
   }
 
-  private isConditionMet(trigger: Trigger, fieldValue: number): boolean {
+  private isConditionMet(trigger: Trigger, value: number): boolean {
     switch (trigger.range.type) {
       case RangeType.INSIDE:
-        return (
-          fieldValue >= trigger.range.lower && fieldValue <= trigger.range.upper
-        );
+        return value >= trigger.range.lower && value <= trigger.range.upper;
       case RangeType.OUTSIDE:
-        return (
-          fieldValue < trigger.range.lower || fieldValue > trigger.range.upper
-        );
+        return value < trigger.range.lower || value > trigger.range.upper;
       case RangeType.LOWER:
-        return fieldValue < trigger.range.lower;
+        return value < trigger.range.lower;
       case RangeType.UPPER:
-        return fieldValue > trigger.range.upper;
+        return value > trigger.range.upper;
       default:
         return false;
+    }
+  }
+
+  private getFieldType(updatedFields: any): Field | null {
+    if (updatedFields.temperature) return Field.TEMPERATURE;
+    if (updatedFields.relativeHumidity) return Field.RELATIVE_HUMIDITY;
+    if (updatedFields.pressure) return Field.PRESSURE;
+    return null;
+  }
+
+  private getUpdatedValue(updatedFields: any): number {
+    return (
+      updatedFields.temperature ||
+      updatedFields.relativeHumidity ||
+      updatedFields.pressure
+    );
+  }
+
+  private getFieldUnit(field: Field): string {
+    switch (field) {
+      case Field.TEMPERATURE:
+        return '°C';
+      case Field.RELATIVE_HUMIDITY:
+        return '%';
+      case Field.PRESSURE:
+        return 'Pa';
+      default:
+        return '';
     }
   }
 
