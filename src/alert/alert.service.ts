@@ -104,10 +104,12 @@ export class AlertService {
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
     ) {
-      await this.alertModel.findByIdAndUpdate(alert.id, {
-        conditionStartTime: new Date(),
-        active: true,
-      });
+      if (alert.conditionStartTime === null) {
+        await this.alertModel.findByIdAndUpdate(alert.id, {
+          conditionStartTime: new Date(),
+          active: true,
+        });
+      }
     } else {
       await this.deactivateAlert(alert.id);
     }
