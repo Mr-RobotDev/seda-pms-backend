@@ -268,7 +268,7 @@ export class AlertService {
       {
         page,
         limit,
-        projection: '-createdAt',
+        projection: '-createdAt -conditionStartTime',
         populate: [
           {
             path: 'device',
@@ -293,12 +293,16 @@ export class AlertService {
   }
 
   async getAlert(id: string): Promise<Alert> {
-    const alert = await this.alertModel.findById(id, '-createdAt', {
-      populate: {
-        path: 'device',
-        select: 'name lastUpdated temperature relativeHumidity pressure',
+    const alert = await this.alertModel.findById(
+      id,
+      '-createdAt -conditionStartTime',
+      {
+        populate: {
+          path: 'device',
+          select: 'name lastUpdated temperature relativeHumidity pressure',
+        },
       },
-    });
+    );
     if (!alert) {
       throw new NotFoundException(`Alert #${id} not found`);
     }
@@ -314,7 +318,7 @@ export class AlertService {
       updateAlertDto,
       {
         new: true,
-        projection: '-createdAt',
+        projection: '-createdAt -conditionStartTime',
         populate: {
           path: 'device',
           select: 'name lastUpdated temperature relativeHumidity pressure',
