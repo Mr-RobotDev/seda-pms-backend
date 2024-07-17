@@ -54,7 +54,7 @@ export class AlertService {
           field,
           value,
         );
-        await this.deactivateAlert(alert.id);
+        await this.resetAlertCondition(alert.id);
       }
     });
 
@@ -95,7 +95,7 @@ export class AlertService {
     await Promise.all(alertPromises);
   }
 
-  async activateAlert(
+  private async activateAlert(
     alert: Alert,
     currentDay: WeekDay,
     value: number,
@@ -105,17 +105,23 @@ export class AlertService {
       this.isConditionMet(alert.trigger, value)
     ) {
       if (alert.conditionStartTime === null) {
-        await this.alertModel.findByIdAndUpdate(alert.id, {
-          conditionStartTime: new Date(),
-          active: true,
-        });
+        await this.setAlertCondition(alert.id);
       }
     } else {
-      await this.deactivateAlert(alert.id);
+      if (alert.conditionStartTime) {
+        await this.resetAlertCondition(alert.id);
+      }
     }
   }
 
-  async deactivateAlert(alert: string) {
+  private async setAlertCondition(alert: string) {
+    await this.alertModel.findByIdAndUpdate(alert, {
+      conditionStartTime: new Date(),
+      active: true,
+    });
+  }
+
+  private async resetAlertCondition(alert: string) {
     await this.alertModel.findByIdAndUpdate(alert, {
       conditionStartTime: null,
       active: false,
