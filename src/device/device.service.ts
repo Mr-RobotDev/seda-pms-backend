@@ -14,6 +14,7 @@ import { Page } from '../log/enums/page.enum';
 import { DeviceResponse } from './interfaces/device-response.interface';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
+import { DeviceType } from './enums/device-type.enum';
 
 @Injectable()
 export class DeviceService {
@@ -101,6 +102,11 @@ export class DeviceService {
     offline: number;
   }> {
     const [stats] = await this.deviceModel.aggregate([
+      {
+        $match: {
+          type: { $in: [DeviceType.HUMIDITY, DeviceType.PRESSURE] },
+        },
+      },
       {
         $group: {
           _id: null,
