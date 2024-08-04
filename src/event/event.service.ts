@@ -156,7 +156,6 @@ export class EventService implements OnModuleInit {
   ) {
     const { from, to } = query;
     const events = await this.getEvents(deviceId, query);
-    console.log(events[0]);
     const device = await this.deviceService.getDeviceById(deviceId);
     let result: PartialUser;
     if (user) {
