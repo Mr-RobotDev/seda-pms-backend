@@ -228,11 +228,11 @@ export class DeviceService {
   async updateDeviceBySlug(
     slug: string,
     pressure: number,
-    lastUpdated?: Date,
+    lastUpdated: Date,
   ): Promise<Device> {
     return this.deviceModel.findOneAndUpdate(
       { slug },
-      { pressure, ...(lastUpdated && { lastUpdated }) },
+      { pressure, lastUpdated },
       { new: true },
     );
   }

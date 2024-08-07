@@ -106,27 +106,16 @@ export class WebhookService {
     pressureDeviceSlug: PressureDeviceSlug,
   ): Promise<void> {
     const pressure = Number(rawBody.toString('utf8'));
-    const device = await this.deviceService.getDeviceBySlug(pressureDeviceSlug);
 
     const now = new Date();
-    const lastUpdateThreshold = new Date(now.getTime() - 600000);
-
-    if (!device.lastUpdated || device.lastUpdated <= lastUpdateThreshold) {
-      await this.deviceService.updateDeviceBySlug(
-        pressureDeviceSlug,
-        pressure,
-        now,
-      );
-      await this.eventService.createEvent({
-        device: device.id,
-        pressure,
-      });
-    } else {
-      await this.deviceService.updateDeviceBySlug(
-        pressureDeviceSlug,
-        pressure,
-        now,
-      );
-    }
+    const device = await this.deviceService.updateDeviceBySlug(
+      pressureDeviceSlug,
+      pressure,
+      now,
+    );
+    await this.eventService.createEvent({
+      device: device.id,
+      pressure,
+    });
   }
 }
