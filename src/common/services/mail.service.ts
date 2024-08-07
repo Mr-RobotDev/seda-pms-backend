@@ -37,7 +37,7 @@ export class MailService {
   async sendDashboardReport(
     emails: string[],
     attachments: AttachmentData[],
-    dashboard_name: string,
+    dashboardName: string,
     timeframe: string,
   ): Promise<boolean> {
     try {
@@ -46,7 +46,7 @@ export class MailService {
           to: email,
           from: `Origin Smart Controls <${this.configService.get<string>('sendgrid.from')}>`,
           dynamicTemplateData: {
-            dashboard_name,
+            dashboardName,
             timeframe,
           },
           attachments,
