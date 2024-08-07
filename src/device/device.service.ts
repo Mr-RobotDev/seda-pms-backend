@@ -11,10 +11,10 @@ import { UpdateDeviceByOem } from './dto/update-device-by-oem.dto';
 import { UpdateDeviceAlertStatus } from './dto/update-device-alert-status.dto';
 import { Action } from '../log/enums/action.enum';
 import { Page } from '../log/enums/page.enum';
+import { DeviceType } from './enums/device-type.enum';
 import { DeviceResponse } from './interfaces/device-response.interface';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
-import { DeviceType } from './enums/device-type.enum';
 
 @Injectable()
 export class DeviceService {

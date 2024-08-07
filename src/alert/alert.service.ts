@@ -33,12 +33,12 @@ export class AlertService {
     private readonly mailService: MailService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Europe/London' })
   async resetAlerts() {
     await this.alertModel.updateMany({}, { numSent: 0 });
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, { timeZone: 'Europe/London' })
   async sendActiveAlerts() {
     const alerts = await this.alertModel.find({ active: true });
 
