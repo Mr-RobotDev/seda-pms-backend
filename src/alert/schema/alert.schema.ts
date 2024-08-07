@@ -53,15 +53,21 @@ export class Alert extends Document {
 
   @Prop({
     type: Boolean,
+    default: true,
+  })
+  enabled: boolean;
+
+  @Prop({
+    type: Boolean,
     default: false,
   })
   active: boolean;
 
   @Prop({
-    type: Boolean,
-    default: true,
+    type: Number,
+    default: 0,
   })
-  enabled: boolean;
+  numSent: number;
 
   @Prop({
     type: Date,

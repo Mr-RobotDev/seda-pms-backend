@@ -33,7 +33,12 @@ export class AlertService {
     private readonly mailService: MailService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async resetAlerts() {
+    await this.alertModel.updateMany({}, { numSent: 0 });
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async sendActiveAlerts() {
     const alerts = await this.alertModel.find({ active: true });
 
@@ -46,7 +51,7 @@ export class AlertService {
       const now = new Date();
       const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
 
-      if (duration >= alert.trigger.duration) {
+      if (duration >= alert.trigger.duration && alert.numSent < 3) {
         await this.sendAlertEmail(
           alert,
           device.name,
@@ -54,6 +59,7 @@ export class AlertService {
           field,
           value,
         );
+        await this.incrementAlertSent(alert.id);
         await this.resetAlertCondition(alert.id);
       }
     });
@@ -125,6 +131,12 @@ export class AlertService {
     await this.alertModel.findByIdAndUpdate(alert, {
       conditionStartTime: null,
       active: false,
+    });
+  }
+
+  private async incrementAlertSent(alert: string) {
+    await this.alertModel.findByIdAndUpdate(alert, {
+      $inc: { numSent: 1 },
     });
   }
 
