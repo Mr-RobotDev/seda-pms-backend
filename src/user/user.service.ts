@@ -66,17 +66,11 @@ export class UserService {
     };
   }
 
-  async getUsers(query: GetUsersQueryDto): Promise<Result<User>> {
-    const { search, page, limit } = query;
+  async getUsers(query?: GetUsersQueryDto): Promise<Result<User>> {
+    const { isActive = 'true', page, limit } = query;
     return this.userModel.paginate(
       {
-        ...(search && {
-          $or: [
-            { firstName: { $regex: search, $options: 'i' } },
-            { lastName: { $regex: search, $options: 'i' } },
-            { email: { $regex: search, $options: 'i' } },
-          ],
-        }),
+        isActive: isActive === 'true',
       },
       {
         page,
