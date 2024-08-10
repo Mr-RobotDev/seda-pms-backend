@@ -52,6 +52,16 @@ export class AlertLogService {
       updateAlertLogDto,
       {
         new: true,
+        populate: [
+          {
+            path: 'alert',
+            select: 'name',
+          },
+          {
+            path: 'user',
+            select: 'firstName lastName',
+          },
+        ],
       },
     );
 
@@ -66,7 +76,19 @@ export class AlertLogService {
     const alertLog = await this.alertLogModel.findByIdAndUpdate(
       id,
       { user, accepted: true },
-      { new: true },
+      {
+        new: true,
+        populate: [
+          {
+            path: 'alert',
+            select: 'name',
+          },
+          {
+            path: 'user',
+            select: 'firstName lastName',
+          },
+        ],
+      },
     );
 
     if (!alertLog) {
