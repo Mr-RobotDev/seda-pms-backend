@@ -18,6 +18,8 @@ export class LogService {
 
   getLogs(query: GetLogsQueryDto) {
     const { user, device, from, to, page, limit } = query;
+    const adjustedTo = new Date(to);
+    adjustedTo.setHours(23, 59, 59, 999);
 
     return this.logModel.paginate(
       {
@@ -25,7 +27,7 @@ export class LogService {
         ...(device && { device }),
         createdAt: {
           $gte: from,
-          $lte: to,
+          $lte: adjustedTo,
         },
       },
       {
