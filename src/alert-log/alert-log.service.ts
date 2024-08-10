@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { AlertLog } from './schema/alert-log.schema';
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { GetAlertLogsDto } from './dto/get-alert-logs.dto';
+import { UpdateAlertLogDto } from './dto/update-alert-log.dto';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
-import { UpdateAlertLogDto } from './dto/update-alert-log.dto';
 
 @Injectable()
 export class AlertLogService {
@@ -17,10 +17,15 @@ export class AlertLogService {
     return this.alertLogModel.create({ alert });
   }
 
-  async getAlertLogs(query: PaginationQueryDto): Promise<Result<AlertLog>> {
-    const { page, limit } = query;
+  async getAlertLogs(query?: GetAlertLogsDto): Promise<Result<AlertLog>> {
+    const { from, to, page, limit } = query;
+    const adjustedTo = new Date(to);
+    adjustedTo.setHours(23, 59, 59, 999);
+
     return this.alertLogModel.paginate(
-      {},
+      {
+        createdAt: { $gte: from, $lte: adjustedTo },
+      },
       {
         page,
         limit,
@@ -31,7 +36,7 @@ export class AlertLogService {
           },
           {
             path: 'user',
-            select: 'name',
+            select: 'firstName lastName',
           },
         ],
       },
