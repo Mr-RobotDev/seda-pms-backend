@@ -6,10 +6,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { format } from 'date-fns';
 import { Alert } from './schema/alert.schema';
 import { Trigger } from './schema/trigger.schema';
 import { DeviceService } from '../device/device.service';
+import { AlertLogService } from '../alert-log/alert-log.service';
 import { MailService } from '../common/services/mail.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
@@ -21,7 +23,6 @@ import { WeekDay } from '../common/enums/week-day.enum';
 import { ScheduleType } from '../common/enums/schedule-type.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AlertService {
@@ -30,6 +31,7 @@ export class AlertService {
     private readonly alertModel: PaginatedModel<Alert>,
     @Inject(forwardRef(() => DeviceService))
     private readonly deviceService: DeviceService,
+    private readonly alertLogService: AlertLogService,
     private readonly mailService: MailService,
   ) {}
 
@@ -59,6 +61,7 @@ export class AlertService {
           field,
           value,
         );
+        await this.alertLogService.createAlertLog(alert.id);
         await this.incrementAlertSent(alert.id);
         await this.resetAlertCondition(alert.id);
       }
