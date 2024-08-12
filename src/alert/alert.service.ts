@@ -117,7 +117,7 @@ export class AlertService {
         await this.setAlertCondition(alert.id);
       }
     } else {
-      if (alert.conditionStartTime) {
+      if (alert.conditionStartTime && alert.conditionStartTime !== null) {
         await this.resetAlertCondition(alert.id);
       }
     }
