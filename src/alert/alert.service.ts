@@ -289,7 +289,7 @@ export class AlertService {
       {
         page,
         limit,
-        projection: '-createdAt -conditionStartTime',
+        projection: '-createdAt -conditionStartTime -numSent',
         populate: [
           {
             path: 'device',
@@ -316,7 +316,7 @@ export class AlertService {
   async getAlert(id: string): Promise<Alert> {
     const alert = await this.alertModel.findById(
       id,
-      '-createdAt -conditionStartTime',
+      '-createdAt -conditionStartTime -numSent',
       {
         populate: {
           path: 'device',
@@ -339,7 +339,7 @@ export class AlertService {
       updateAlertDto,
       {
         new: true,
-        projection: '-createdAt -conditionStartTime',
+        projection: '-createdAt -conditionStartTime -numSent',
         populate: {
           path: 'device',
           select: 'name lastUpdated temperature relativeHumidity pressure',
