@@ -98,21 +98,33 @@ export class DeviceService {
     totalDevices: number;
     highestTemperature: number;
     highestRelativeHumidity: number;
+    highestPressure: number;
     online: number;
     offline: number;
   }> {
     const [stats] = await this.deviceModel.aggregate([
       {
-        $match: {
-          type: { $in: [DeviceType.HUMIDITY, DeviceType.PRESSURE] },
-        },
-      },
-      {
         $group: {
           _id: null,
           totalDevices: { $sum: 1 },
-          highestTemperature: { $max: '$temperature' },
-          highestRelativeHumidity: { $max: '$relativeHumidity' },
+          highestTemperature: {
+            $max: {
+              $cond: [
+                { $in: ['$type', [DeviceType.HUMIDITY, DeviceType.PRESSURE]] },
+                '$temperature',
+                null,
+              ],
+            },
+          },
+          highestRelativeHumidity: {
+            $max: {
+              $cond: [
+                { $in: ['$type', [DeviceType.HUMIDITY, DeviceType.PRESSURE]] },
+                '$relativeHumidity',
+                null,
+              ],
+            },
+          },
           highestPressure: { $max: '$pressure' },
           online: {
             $sum: {
@@ -138,6 +150,7 @@ export class DeviceService {
         },
       },
     ]);
+
     await this.logService.createLog(user, {
       action: Action.VIEWED,
       page: Page.FLOOR_PLAN,
