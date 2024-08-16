@@ -1,23 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Alert } from '../../alert/schema/alert.schema';
+import { User } from '../../user/schema/user.schema';
 import toJSON from '../../common/plugins/toJSON.plugin';
 import {
   paginate,
   paginatedAggregation,
 } from '../../common/plugins/pagination.plugin';
-import { Alert } from '../../alert/schema/alert.schema';
-import { User } from '../../user/schema/user.schema';
 
 @Schema({
   timestamps: true,
 })
 export class AlertLog extends Document {
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
-  accepted: boolean;
-
   @Prop({
     type: String,
   })
@@ -34,7 +28,7 @@ export class AlertLog extends Document {
   @Prop({
     type: String,
     ref: User.name,
-    sparse: true,
+    required: true,
     index: true,
   })
   user?: string;

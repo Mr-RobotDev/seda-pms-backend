@@ -75,7 +75,7 @@ export class AlertLogService {
   async acceptAlertLog(user: string, id: string): Promise<AlertLog> {
     const alertLog = await this.alertLogModel.findByIdAndUpdate(
       id,
-      { user, accepted: true },
+      { user },
       {
         new: true,
         populate: [

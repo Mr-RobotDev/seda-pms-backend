@@ -35,36 +35,26 @@ export class AlertService {
     private readonly mailService: MailService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Europe/London' })
-  async resetAlerts() {
-    await this.alertModel.updateMany({}, { numSent: 0 });
-  }
-
   @Cron(CronExpression.EVERY_5_MINUTES, { timeZone: 'Europe/London' })
   async sendActiveAlerts() {
-    const alerts = await this.alertModel.find({ active: true });
+    const alerts = await this.alertModel.find({ active: true, sent: false });
 
     const alertPromises = alerts.map(async (alert) => {
       const device = await this.deviceService.getDeviceById(alert.device);
       const field = alert.trigger.field;
       const value = device[field];
 
-      const startTime = new Date(alert.conditionStartTime);
-      const now = new Date();
-      const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
-
-      if (duration >= alert.trigger.duration && alert.numSent < 3) {
-        await this.sendAlertEmail(
+      await Promise.all([
+        this.sendAlertEmail(
           alert,
           device.name,
           device.lastUpdated,
           field,
           value,
-        );
-        await this.alertLogService.createAlertLog(alert.id);
-        await this.incrementAlertSent(alert.id);
-        await this.resetAlertCondition(alert.id);
-      }
+        ),
+        this.alertModel.findByIdAndUpdate(alert.id, { sent: true }),
+        this.alertLogService.createAlertLog(alert.id),
+      ]);
     });
 
     await Promise.all(alertPromises);
@@ -114,33 +104,26 @@ export class AlertService {
       this.isConditionMet(alert.trigger, value)
     ) {
       if (alert.conditionStartTime === null) {
-        await this.setAlertCondition(alert.id);
+        await this.alertModel.findByIdAndUpdate(alert.id, {
+          conditionStartTime: new Date(),
+        });
+      } else {
+        const startTime = new Date(alert.conditionStartTime);
+        const now = new Date();
+        const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
+        if (duration >= alert.trigger.duration) {
+          await this.alertModel.findByIdAndUpdate(alert.id, {
+            active: true,
+          });
+        }
       }
     } else {
       if (alert.conditionStartTime && alert.conditionStartTime !== null) {
-        await this.resetAlertCondition(alert.id);
+        await this.alertModel.findByIdAndUpdate(alert.id, {
+          conditionStartTime: null,
+        });
       }
     }
-  }
-
-  private async setAlertCondition(alert: string) {
-    await this.alertModel.findByIdAndUpdate(alert, {
-      conditionStartTime: new Date(),
-      active: true,
-    });
-  }
-
-  private async resetAlertCondition(alert: string) {
-    await this.alertModel.findByIdAndUpdate(alert, {
-      conditionStartTime: null,
-      active: false,
-    });
-  }
-
-  private async incrementAlertSent(alert: string) {
-    await this.alertModel.findByIdAndUpdate(alert, {
-      $inc: { numSent: 1 },
-    });
   }
 
   private async sendAlertEmail(
@@ -289,7 +272,7 @@ export class AlertService {
       {
         page,
         limit,
-        projection: '-createdAt -conditionStartTime -numSent',
+        projection: '-createdAt -conditionStartTime',
         populate: [
           {
             path: 'device',
@@ -316,7 +299,7 @@ export class AlertService {
   async getAlert(id: string): Promise<Alert> {
     const alert = await this.alertModel.findById(
       id,
-      '-createdAt -conditionStartTime -numSent',
+      '-createdAt -conditionStartTime',
       {
         populate: {
           path: 'device',
@@ -339,7 +322,7 @@ export class AlertService {
       updateAlertDto,
       {
         new: true,
-        projection: '-createdAt -conditionStartTime -numSent',
+        projection: '-createdAt -conditionStartTime',
         populate: {
           path: 'device',
           select: 'name lastUpdated temperature relativeHumidity pressure',

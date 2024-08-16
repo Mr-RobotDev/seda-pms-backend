@@ -64,10 +64,16 @@ export class Alert extends Document {
   active: boolean;
 
   @Prop({
-    type: Number,
-    default: 0,
+    type: Boolean,
+    default: false,
   })
-  numSent: number;
+  sent: boolean;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  accepted: boolean;
 
   @Prop({
     type: Date,
