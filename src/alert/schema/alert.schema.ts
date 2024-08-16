@@ -67,12 +67,6 @@ export class Alert extends Document {
     type: Boolean,
     default: false,
   })
-  sent: boolean;
-
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
   accepted: boolean;
 
   @Prop({

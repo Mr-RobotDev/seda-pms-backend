@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { format } from 'date-fns';
 import { Alert } from './schema/alert.schema';
 import { Trigger } from './schema/trigger.schema';
@@ -34,31 +33,6 @@ export class AlertService {
     private readonly alertLogService: AlertLogService,
     private readonly mailService: MailService,
   ) {}
-
-  @Cron(CronExpression.EVERY_5_MINUTES, { timeZone: 'Europe/London' })
-  async sendActiveAlerts() {
-    const alerts = await this.alertModel.find({ active: true, sent: false });
-
-    const alertPromises = alerts.map(async (alert) => {
-      const device = await this.deviceService.getDeviceById(alert.device);
-      const field = alert.trigger.field;
-      const value = device[field];
-
-      await Promise.all([
-        this.sendAlertEmail(
-          alert,
-          device.name,
-          device.lastUpdated,
-          field,
-          value,
-        ),
-        this.alertModel.findByIdAndUpdate(alert.id, { sent: true }),
-        this.alertLogService.createAlertLog(alert.id),
-      ]);
-    });
-
-    await Promise.all(alertPromises);
-  }
 
   async handleUpdateChange(change: any) {
     const device = change.documentKey._id;
@@ -111,13 +85,32 @@ export class AlertService {
         const startTime = new Date(alert.conditionStartTime);
         const now = new Date();
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
-        if (duration >= alert.trigger.duration) {
-          await this.alertModel.findByIdAndUpdate(alert.id, {
-            active: true,
-          });
+
+        if (duration >= alert.trigger.duration && !alert.active) {
+          const device = await this.deviceService.getDeviceById(alert.device);
+          const field = alert.trigger.field;
+          const value = device[field];
+
+          await Promise.all([
+            this.sendAlertEmail(
+              alert,
+              device.name,
+              device.lastUpdated,
+              field,
+              value,
+            ),
+            this.alertModel.findByIdAndUpdate(alert.id, {
+              active: true,
+              accepted: false,
+              conditionStartTime: null,
+            }),
+          ]);
         }
       }
     } else {
+      await this.alertModel.findByIdAndUpdate(alert.id, {
+        active: alert.accepted ? false : true,
+      });
       if (alert.conditionStartTime && alert.conditionStartTime !== null) {
         await this.alertModel.findByIdAndUpdate(alert.id, {
           conditionStartTime: null,
@@ -272,7 +265,7 @@ export class AlertService {
       {
         page,
         limit,
-        projection: '-createdAt -conditionStartTime -sent',
+        projection: '-createdAt -conditionStartTime',
         populate: [
           {
             path: 'device',
@@ -299,7 +292,7 @@ export class AlertService {
   async getAlert(id: string): Promise<Alert> {
     const alert = await this.alertModel.findById(
       id,
-      '-createdAt -conditionStartTime -sent -accepted',
+      '-createdAt -conditionStartTime -accepted',
       {
         populate: {
           path: 'device',
@@ -313,6 +306,19 @@ export class AlertService {
     return alert;
   }
 
+  async acceptAlert(user: string, id: string): Promise<Alert> {
+    const alert = await this.alertModel.findByIdAndUpdate(
+      id,
+      { accepted: true },
+      { new: true },
+    );
+    if (!alert) {
+      throw new NotFoundException(`Alert #${id} not found`);
+    }
+    await this.alertLogService.createAlertLog(user, alert.id);
+    return alert;
+  }
+
   async updateAlert(
     id: string,
     updateAlertDto: UpdateAlertDto,
@@ -322,7 +328,7 @@ export class AlertService {
       updateAlertDto,
       {
         new: true,
-        projection: '-createdAt -conditionStartTime -sent -accepted',
+        projection: '-createdAt -conditionStartTime -accepted',
         populate: {
           path: 'device',
           select: 'name lastUpdated temperature relativeHumidity pressure',
