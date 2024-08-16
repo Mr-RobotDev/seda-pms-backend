@@ -51,15 +51,16 @@ export class AlertController {
 
   @Roles(Role.ADMIN)
   @Patch(':alert/accept')
-  acceptAlert(
+  async acceptAlert(
     @CurrentUser() account: Account,
     @Param('alert', IsObjectIdPipe) alert: string,
   ) {
-    return this.alertService.acceptAlert(account.sub, alert);
+    await this.alertService.acceptAlert(account.sub, alert);
   }
 
   @Roles(Role.ADMIN)
   @Patch(':alert')
+  @HttpCode(HttpStatus.NO_CONTENT)
   updateAlert(
     @Param('alert', IsObjectIdPipe) alert: string,
     @Body() updateAlertDto: UpdateAlertDto,

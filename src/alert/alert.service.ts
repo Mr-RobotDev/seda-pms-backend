@@ -306,7 +306,7 @@ export class AlertService {
     return alert;
   }
 
-  async acceptAlert(user: string, id: string): Promise<Alert> {
+  async acceptAlert(user: string, id: string): Promise<void> {
     const alert = await this.alertModel.findByIdAndUpdate(
       id,
       { accepted: true },
@@ -316,7 +316,6 @@ export class AlertService {
       throw new NotFoundException(`Alert #${id} not found`);
     }
     await this.alertLogService.createAlertLog(user, alert.id);
-    return alert;
   }
 
   async updateAlert(
