@@ -82,7 +82,7 @@ export class AlertService {
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
     ) {
-      if (alert.conditionStartTime === null) {
+      if (alert.conditionStartTime || alert.conditionStartTime === null) {
         await this.alertModel.findByIdAndUpdate(alert.id, {
           conditionStartTime: new Date(),
         });
@@ -112,16 +112,18 @@ export class AlertService {
         }
       }
     } else {
-      const alertLog = await this.alertLogService.getAlertLogByAlert(alert.id);
-      await this.alertModel.findByIdAndUpdate(alert.id, {
-        active: alertLog.accepted ? false : true,
-      });
       if (alert.conditionStartTime && alert.conditionStartTime !== null) {
         await this.alertModel.findByIdAndUpdate(alert.id, {
           conditionStartTime: null,
         });
       }
     }
+  }
+
+  async deactivateAlert(alert: Alert) {
+    await this.alertModel.findByIdAndUpdate(alert.id, {
+      active: false,
+    });
   }
 
   private async sendAlertEmail(

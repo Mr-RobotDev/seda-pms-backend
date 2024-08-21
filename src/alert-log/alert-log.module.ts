@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AlertLogService } from './alert-log.service';
 import { AlertLogController } from './alert-log.controller';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AlertLog, AlertLogSchema } from './schema/alert-log.schema';
+import { AlertModule } from '../alert/alert.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AlertLog, AlertLogSchema } from './schema/alert-log.schema';
         schema: AlertLogSchema,
       },
     ]),
+    forwardRef(() => AlertModule),
   ],
   controllers: [AlertLogController],
   providers: [AlertLogService],

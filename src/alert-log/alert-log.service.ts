@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { AlertLog } from './schema/alert-log.schema';
+import { AlertService } from '../alert/alert.service';
 import { GetAlertLogsDto } from './dto/get-alert-logs.dto';
 import { UpdateAlertLogDto } from './dto/update-alert-log.dto';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
@@ -11,6 +17,8 @@ export class AlertLogService {
   constructor(
     @InjectModel(AlertLog.name)
     private readonly alertLogModel: PaginatedModel<AlertLog>,
+    @Inject(forwardRef(() => AlertService))
+    private readonly alertService: AlertService,
   ) {}
 
   createAlertLog(alert: string): Promise<AlertLog> {
@@ -81,13 +89,14 @@ export class AlertLogService {
     id: string,
     accepted: boolean = true,
   ): Promise<void> {
-    const alert = await this.alertLogModel.findByIdAndUpdate(
+    const alertLog = await this.alertLogModel.findByIdAndUpdate(
       id,
       { user, accepted },
       { new: true },
     );
-    if (!alert) {
+    if (!alertLog) {
       throw new NotFoundException(`Alert #${id} not found`);
     }
+    await this.alertService.deactivateAlert(alertLog.alert);
   }
 }
