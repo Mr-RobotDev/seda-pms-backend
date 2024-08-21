@@ -3,6 +3,10 @@ import { AlertLogService } from './alert-log.service';
 import { GetAlertLogsDto } from './dto/get-alert-logs.dto';
 import { UpdateAlertLogDto } from './dto/update-alert-log.dto';
 import { IsObjectIdPipe } from '../common/pipes/objectid.pipe';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/enums/role.enum';
+import { Account } from '../common/interfaces/account.interface';
 
 @Controller({
   path: 'alertLogs',
@@ -22,5 +26,14 @@ export class AlertLogController {
     @Body() updateAlertLogDto: UpdateAlertLogDto,
   ) {
     return this.alertLogService.updateAlertLog(alertLog, updateAlertLogDto);
+  }
+
+  @Roles(Role.ADMIN)
+  @Patch(':alertLog/accept')
+  async acceptAlertLog(
+    @CurrentUser() account: Account,
+    @Param('alertLog', IsObjectIdPipe) alertLog: string,
+  ) {
+    await this.alertLogService.acceptAlertLog(account.sub, alertLog);
   }
 }

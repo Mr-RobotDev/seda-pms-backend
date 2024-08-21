@@ -48,11 +48,16 @@ export class AlertService {
   }
 
   async filterAlerts(device: string, field: Field): Promise<Alert[]> {
-    return this.alertModel.find({
-      device,
-      enabled: true,
-      'trigger.field': field,
-    });
+    return this.alertModel
+      .find({
+        device,
+        enabled: true,
+        'trigger.field': field,
+      })
+      .populate({
+        path: 'device',
+        select: 'name lastUpdated temperature relativeHumidity pressure',
+      });
   }
 
   private async processAlerts(
@@ -87,29 +92,29 @@ export class AlertService {
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
 
         if (duration >= alert.trigger.duration && !alert.active) {
-          const device = await this.deviceService.getDeviceById(alert.device);
           const field = alert.trigger.field;
-          const value = device[field];
+          const value = alert.device[field];
 
           await Promise.all([
             this.sendAlertEmail(
               alert,
-              device.name,
-              device.lastUpdated,
+              alert.device.name,
+              alert.device.lastUpdated,
               field,
               value,
             ),
             this.alertModel.findByIdAndUpdate(alert.id, {
               active: true,
-              accepted: false,
               conditionStartTime: null,
             }),
+            this.alertLogService.createAlertLog(alert.id),
           ]);
         }
       }
     } else {
+      const alertLog = await this.alertLogService.getAlertLogByAlert(alert.id);
       await this.alertModel.findByIdAndUpdate(alert.id, {
-        active: alert.accepted ? false : true,
+        active: alertLog.accepted ? false : true,
       });
       if (alert.conditionStartTime && alert.conditionStartTime !== null) {
         await this.alertModel.findByIdAndUpdate(alert.id, {
@@ -292,7 +297,7 @@ export class AlertService {
   async getAlert(id: string): Promise<Alert> {
     const alert = await this.alertModel.findById(
       id,
-      '-createdAt -conditionStartTime -accepted',
+      '-createdAt -conditionStartTime',
       {
         populate: {
           path: 'device',
@@ -306,18 +311,6 @@ export class AlertService {
     return alert;
   }
 
-  async acceptAlert(user: string, id: string): Promise<void> {
-    const alert = await this.alertModel.findByIdAndUpdate(
-      id,
-      { accepted: true },
-      { new: true },
-    );
-    if (!alert) {
-      throw new NotFoundException(`Alert #${id} not found`);
-    }
-    await this.alertLogService.createAlertLog(user, alert.id);
-  }
-
   async updateAlert(
     id: string,
     updateAlertDto: UpdateAlertDto,
@@ -327,7 +320,7 @@ export class AlertService {
       updateAlertDto,
       {
         new: true,
-        projection: '-createdAt -conditionStartTime -accepted',
+        projection: '-createdAt -conditionStartTime',
         populate: {
           path: 'device',
           select: 'name lastUpdated temperature relativeHumidity pressure',

@@ -18,17 +18,23 @@ export class AlertLog extends Document {
   notes?: string;
 
   @Prop({
+    type: Boolean,
+    default: false,
+  })
+  accepted: boolean;
+
+  @Prop({
     type: String,
     ref: Alert.name,
     required: true,
     index: true,
   })
-  alert: string;
+  alert: Alert;
 
   @Prop({
     type: String,
     ref: User.name,
-    required: true,
+    sparse: true,
     index: true,
   })
   user?: string;

@@ -64,12 +64,6 @@ export class Alert extends Document {
   active: boolean;
 
   @Prop({
-    type: Boolean,
-    default: false,
-  })
-  accepted: boolean;
-
-  @Prop({
     type: Date,
   })
   conditionStartTime?: Date;

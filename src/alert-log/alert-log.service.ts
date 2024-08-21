@@ -13,8 +13,8 @@ export class AlertLogService {
     private readonly alertLogModel: PaginatedModel<AlertLog>,
   ) {}
 
-  createAlertLog(user: string, alert: string): Promise<AlertLog> {
-    return this.alertLogModel.create({ user, alert });
+  createAlertLog(alert: string): Promise<AlertLog> {
+    return this.alertLogModel.create({ alert });
   }
 
   async getAlertLogs(query?: GetAlertLogsDto): Promise<Result<AlertLog>> {
@@ -70,5 +70,24 @@ export class AlertLogService {
     }
 
     return alertLog;
+  }
+
+  async getAlertLogByAlert(alert: string): Promise<AlertLog> {
+    return this.alertLogModel.findOne({ alert }).sort({ createdAt: -1 });
+  }
+
+  async acceptAlertLog(
+    user: string,
+    id: string,
+    accepted: boolean = true,
+  ): Promise<void> {
+    const alert = await this.alertLogModel.findByIdAndUpdate(
+      id,
+      { user, accepted },
+      { new: true },
+    );
+    if (!alert) {
+      throw new NotFoundException(`Alert #${id} not found`);
+    }
   }
 }

@@ -16,8 +16,6 @@ import { CreateAlertDto } from './dto/create-alert.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { Roles } from '../common/decorators/roles.decorator';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Account } from '../common/interfaces/account.interface';
 import { Role } from '../common/enums/role.enum';
 
 @Controller({
@@ -47,15 +45,6 @@ export class AlertController {
   @Get(':alert')
   getAlert(@Param('alert', IsObjectIdPipe) alert: string) {
     return this.alertService.getAlert(alert);
-  }
-
-  @Roles(Role.ADMIN)
-  @Patch(':alert/accept')
-  async acceptAlert(
-    @CurrentUser() account: Account,
-    @Param('alert', IsObjectIdPipe) alert: string,
-  ) {
-    await this.alertService.acceptAlert(account.sub, alert);
   }
 
   @Roles(Role.ADMIN)
