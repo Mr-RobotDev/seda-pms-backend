@@ -172,7 +172,7 @@ export class DeviceService {
     });
 
     return {
-      ...device.toJSON(),
+      device,
       alerts: alerts.map((alert) => ({
         field: alert.trigger.field,
         range: alert.trigger.range,

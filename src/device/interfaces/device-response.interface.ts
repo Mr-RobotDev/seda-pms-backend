@@ -1,9 +1,5 @@
 import { Range } from '../../alert/schema/range.schema';
-
-interface Location {
-  lat: number;
-  long: number;
-}
+import { Device } from '../schema/device.schema';
 
 interface Alert {
   field: string;
@@ -11,15 +7,6 @@ interface Alert {
 }
 
 export interface DeviceResponse {
-  oem: string;
-  name: string;
-  type: string;
-  temperature: number;
-  relativeHumidity: number;
-  location: Location;
-  isOffline: boolean;
-  lastUpdated: string;
-  signalStrength: number;
-  id: string;
+  device: Device;
   alerts: Alert[];
 }
