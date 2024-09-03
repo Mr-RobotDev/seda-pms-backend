@@ -10,6 +10,7 @@ import {
   startOfDay,
   endOfDay,
 } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Report } from './schema/report.schema';
@@ -24,6 +25,7 @@ import { ScheduleType } from '../common/enums/schedule-type.enum';
 import { TimeFrame } from './enums/timeframe.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
+import { TIMEZONE } from '../common/constants/timezone.constant';
 
 @Injectable()
 export class ReportService {
@@ -35,10 +37,14 @@ export class ReportService {
     private readonly eventService: EventService,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE, { timeZone: 'Europe/London' })
+  @Cron(CronExpression.EVERY_MINUTE, { timeZone: TIMEZONE })
   async sendReports() {
-    const currentDay = format(new Date(), 'EEEE').toLowerCase() as WeekDay;
-    const currentTime = format(new Date(), 'HH:mm');
+    const currentDay = formatInTimeZone(
+      new Date(),
+      TIMEZONE,
+      'EEEE',
+    ).toLowerCase() as WeekDay;
+    const currentTime = formatInTimeZone(new Date(), TIMEZONE, 'HH:mm');
 
     const reports = await this.reportModel.find({ enabled: true }, null, {
       populate: {

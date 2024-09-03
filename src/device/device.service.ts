@@ -15,6 +15,7 @@ import { DeviceType } from './enums/device-type.enum';
 import { DeviceResponse } from './interfaces/device-response.interface';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
+import { TIMEZONE } from '../common/constants/timezone.constant';
 
 @Injectable()
 export class DeviceService {
@@ -36,7 +37,7 @@ export class DeviceService {
     });
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS, { timeZone: 'Europe/London' })
+  @Cron(CronExpression.EVERY_10_SECONDS, { timeZone: TIMEZONE })
   async updateDeviceStatus(): Promise<void> {
     const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
     await this.deviceModel.updateMany(
