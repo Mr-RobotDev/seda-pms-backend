@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { Alert } from './schema/alert.schema';
 import { Trigger } from './schema/trigger.schema';
 import { DeviceService } from '../device/device.service';
@@ -22,6 +22,7 @@ import { WeekDay } from '../common/enums/week-day.enum';
 import { ScheduleType } from '../common/enums/schedule-type.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { Result } from '../common/interfaces/result.interface';
+import { TIMEZONE } from 'src/common/constants/timezone.constant';
 
 @Injectable()
 export class AlertService {
@@ -42,7 +43,11 @@ export class AlertService {
     if (field) {
       const alerts = await this.filterAlerts(device.toString(), field);
 
-      const currentDay = format(new Date(), 'EEEE').toLowerCase() as WeekDay;
+      const currentDay = formatInTimeZone(
+        new Date(),
+        TIMEZONE,
+        'EEEE',
+      ).toLowerCase() as WeekDay;
       await this.processAlerts(alerts, updatedFields, currentDay);
     }
   }
@@ -135,7 +140,11 @@ export class AlertService {
   ) {
     try {
       const unit = this.getFieldUnit(field);
-      const updated = format(lastUpdated, 'dd/MM/yyyy HH:mm:ss');
+      const updated = formatInTimeZone(
+        lastUpdated,
+        TIMEZONE,
+        'dd/MM/yyyy HH:mm:ss',
+      );
       await this.mailService.sendDeviceAlert(
         alert.recipients,
         deviceName,

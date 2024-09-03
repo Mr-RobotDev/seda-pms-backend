@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, ProjectionType } from 'mongoose';
 import { filter, map, Observable, Subject } from 'rxjs';
 import { createObjectCsvWriter } from 'csv-writer';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Event } from './schema/event.schema';
@@ -18,6 +18,7 @@ import { Folder } from '../common/enums/folder.enum';
 import { DeviceType } from '../device/enums/device-type.enum';
 import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
 import { PartialUser } from '../user/types/partial-user.type';
+import { TIMEZONE } from '../common/constants/timezone.constant';
 
 @Injectable()
 export class EventService implements OnModuleInit {
@@ -94,9 +95,17 @@ export class EventService implements OnModuleInit {
       fs.mkdirSync(exportsDirectory, { recursive: true });
     }
 
-    const formattedFrom = format(new Date(from), 'MMMM d, yyyy');
-    const formattedTo = format(new Date(to), 'MMMM d, yyyy');
-    const currentTime = format(new Date(), 'HH:mm:ss');
+    const formattedFrom = formatInTimeZone(
+      new Date(from),
+      TIMEZONE,
+      'MMMM d, yyyy',
+    );
+    const formattedTo = formatInTimeZone(
+      new Date(to),
+      TIMEZONE,
+      'MMMM d, yyyy',
+    );
+    const currentTime = formatInTimeZone(new Date(), TIMEZONE, 'HH:mm:ss');
 
     const filePath = path.join(
       exportsDirectory,
