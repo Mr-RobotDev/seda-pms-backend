@@ -31,7 +31,6 @@ export class DeviceService {
   getEventStream() {
     const changeStream = this.deviceModel.watch();
     changeStream.on('change', async (change) => {
-      console.log('DeviceModel hsa been changed', change, change.operationType)
       if (change.operationType === 'update') {
         await this.alertService.handleUpdateChange(change);
       }

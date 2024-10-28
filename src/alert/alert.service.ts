@@ -40,6 +40,7 @@ export class AlertService {
     const updatedFields = change.updateDescription.updatedFields;
 
     const field = this.getFieldType(updatedFields);
+    console.log('!!!HandleUpdateChange Device', device, updatedFields, field);
     if (field) {
       const alerts = await this.filterAlerts(device.toString(), field);
 
