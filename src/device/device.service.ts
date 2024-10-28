@@ -244,6 +244,7 @@ export class DeviceService {
     pressure: number,
     lastUpdated: Date,
   ): Promise<Device> {
+    console.log('updateDeviceBySlug', slug, pressure, lastUpdated );
     return this.deviceModel.findOneAndUpdate(
       { slug },
       { pressure, lastUpdated },
