@@ -245,11 +245,14 @@ export class DeviceService {
     lastUpdated: Date,
   ): Promise<Device> {
     console.log('updateDeviceBySlug', slug, pressure, lastUpdated );
-    return this.deviceModel.findOneAndUpdate(
+    const result =  this.deviceModel.findOneAndUpdate(
       { slug },
       { pressure, lastUpdated },
       { new: true },
     );
+
+    console.log('UpdateResult', result);
+    return result;
   }
 
   async updateDeviceAlertStatus(
