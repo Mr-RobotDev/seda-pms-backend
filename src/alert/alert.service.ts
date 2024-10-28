@@ -184,6 +184,7 @@ export class AlertService {
   }
 
   private isConditionMet(trigger: Trigger, value: number): boolean {
+    console.log('Trigger', JSON.stringify(trigger, null, 3), value);
     switch (trigger.range.type) {
       case RangeType.INSIDE:
         return value >= trigger.range.lower && value <= trigger.range.upper;
