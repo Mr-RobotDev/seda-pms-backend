@@ -40,18 +40,19 @@ export class AlertService {
     const updatedFields = change.updateDescription.updatedFields;
 
     const field = this.getFieldType(updatedFields);
-    console.log('ID: ', device.toString());
     if (device.toString() === '666184b0d03548858e438bde') {
       console.log('!!!HandleUpdateChange Device', device.id, field);
     }
     if (field) {
       const alerts = await this.filterAlerts(device.toString(), field);
-      console.log('alerts', JSON.stringify(alerts, null, 3));
       const currentDay = formatInTimeZone(
         new Date(),
         TIMEZONE,
         'EEEE',
       ).toLowerCase() as WeekDay;
+      if (device.toString() === '666184b0d03548858e438bde') {
+        console.log('currentDay', currentDay);
+      }
       await this.processAlerts(alerts, updatedFields, currentDay);
     }
   }
@@ -87,6 +88,12 @@ export class AlertService {
     currentDay: WeekDay,
     value: number,
   ): Promise<void> {
+    if (alert.device.slug === 'g05-goods-out-pressure') {
+      console.log('activateAlert',
+          this.isScheduleMatched(alert, currentDay),
+          this.isConditionMet(alert.trigger, value)
+      );
+    }
     if (
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
