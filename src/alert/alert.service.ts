@@ -97,7 +97,7 @@ export class AlertService {
       this.isConditionMet(alert.trigger, value)
     ) {
       console.log('Alert', );
-      if (alert.conditionStartTime || alert.conditionStartTime === null) {
+      if (!alert.conditionStartTime) {
         console.log('Start Condition', );
         await this.alertModel.findByIdAndUpdate(alert.id, {
           conditionStartTime: new Date(),
