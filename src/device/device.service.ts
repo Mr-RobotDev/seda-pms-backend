@@ -29,8 +29,15 @@ export class DeviceService {
   }
 
   getEventStream() {
-    const changeStream = this.deviceModel.watch();
+    const pipeline = [
+      { $match: { 'operationType': 'update' } },
+    ];
+
+    // const changeStream = this.deviceModel.watch();
+    const changeStream = this.deviceModel.watch(pipeline, { fullDocument: 'updateLookup' });
+
     changeStream.on('change', async (change) => {
+      console.log('Full object change:', JSON.stringify(change, null, 2));
       if (change.operationType === 'update') {
         await this.alertService.handleUpdateChange(change);
       }
@@ -247,7 +254,7 @@ export class DeviceService {
     console.log('updateDeviceBySlug', slug, pressure, lastUpdated );
     const result =  this.deviceModel.findOneAndUpdate(
       { slug },
-      { pressure, lastUpdated },
+      { $set: { pressure, lastUpdated } },
       { new: true },
     );
 
