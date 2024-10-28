@@ -83,40 +83,52 @@ export class AlertService {
     value: number,
   ): Promise<void> {
 
-    // @ts-ignore
-    console.log('alert.device', alert.device, alert.device.id.toString());
-    // @ts-ignore
-    // if (alert.device.id.toString() === 'g05-goods-out-pressure') {
+   // @ts-ignore
+    if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
       console.log('activateAlert',
           this.isScheduleMatched(alert, currentDay),
           this.isConditionMet(alert.trigger, value)
       );
-    // }
+    }
+
     if (
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
     ) {
-      console.log('Alert', );
+      if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+        console.log('Alert can be', );
+      }
+
       if (!alert.conditionStartTime) {
-        console.log('Start Condition', );
+
+        if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+          console.log('Start Condition', );
+        }
         await this.alertModel.findByIdAndUpdate(alert.id, {
           conditionStartTime: new Date(),
         });
       } else {
-        console.log('Has condition started', );
+
+        if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+          console.log('Has condition started', );
+        }
         const startTime = new Date(alert.conditionStartTime);
         const now = new Date();
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
 
-        console.log('Has Check', duration >= alert.trigger.duration, !alert.active);
+        if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+          console.log('Has Check', duration >= alert.trigger.duration, !alert.active);
+        }
         if (duration >= alert.trigger.duration && !alert.active) {
           const field = alert.trigger.field;
           const value = alert.device[field];
-          console.log('Send Alert!!!', alert,
-              alert.device.name,
-              alert.device.lastUpdated,
-              field,
-              value);
+          if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+            console.log('Send Alert!!!', alert,
+                alert.device.name,
+                alert.device.lastUpdated,
+                field,
+                value);
+          }
           try {
             await Promise.all([
               this.sendAlertEmail(
