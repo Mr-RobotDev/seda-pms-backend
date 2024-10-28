@@ -40,10 +40,13 @@ export class AlertService {
     const updatedFields = change.updateDescription.updatedFields;
 
     const field = this.getFieldType(updatedFields);
-    console.log('!!!HandleUpdateChange Device', device, updatedFields, field);
+    console.log('ID: ', device.toString());
+    if (device.toString() === '666184b0d03548858e438bde') {
+      console.log('!!!HandleUpdateChange Device', device.id, field);
+    }
     if (field) {
       const alerts = await this.filterAlerts(device.toString(), field);
-
+      console.log('', );
       const currentDay = formatInTimeZone(
         new Date(),
         TIMEZONE,

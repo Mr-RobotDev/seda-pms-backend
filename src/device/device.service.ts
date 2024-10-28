@@ -251,15 +251,11 @@ export class DeviceService {
     pressure: number,
     lastUpdated: Date,
   ): Promise<Device> {
-    console.log('updateDeviceBySlug', slug, pressure, lastUpdated );
-    const result =  this.deviceModel.findOneAndUpdate(
+    return await this.deviceModel.findOneAndUpdate(
       { slug },
       { $set: { pressure, lastUpdated } },
       { new: true },
     );
-
-    console.log('UpdateResult', result);
-    return result;
   }
 
   async updateDeviceAlertStatus(
