@@ -1,28 +1,22 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { formatInTimeZone } from 'date-fns-tz';
-import { Alert } from './schema/alert.schema';
-import { Trigger } from './schema/trigger.schema';
-import { DeviceService } from '../device/device.service';
-import { AlertLogService } from '../alert-log/alert-log.service';
-import { MailService } from '../common/services/mail.service';
-import { CreateAlertDto } from './dto/create-alert.dto';
-import { UpdateAlertDto } from './dto/update-alert.dto';
-import { PaginationQueryDto } from '../common/dto/pagination.dto';
-import { RangeType } from './enums/range-type.enum';
-import { DeviceType } from '../device/enums/device-type.enum';
-import { Field } from '../common/enums/field.enum';
-import { WeekDay } from '../common/enums/week-day.enum';
-import { ScheduleType } from '../common/enums/schedule-type.enum';
-import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
-import { Result } from '../common/interfaces/result.interface';
-import { TIMEZONE } from 'src/common/constants/timezone.constant';
+import {BadRequestException, forwardRef, Inject, Injectable, NotFoundException,} from '@nestjs/common';
+import {InjectModel} from '@nestjs/mongoose';
+import {formatInTimeZone} from 'date-fns-tz';
+import {Alert} from './schema/alert.schema';
+import {Trigger} from './schema/trigger.schema';
+import {DeviceService} from '../device/device.service';
+import {AlertLogService} from '../alert-log/alert-log.service';
+import {MailService} from '../common/services/mail.service';
+import {CreateAlertDto} from './dto/create-alert.dto';
+import {UpdateAlertDto} from './dto/update-alert.dto';
+import {PaginationQueryDto} from '../common/dto/pagination.dto';
+import {RangeType} from './enums/range-type.enum';
+import {DeviceType} from '../device/enums/device-type.enum';
+import {Field} from '../common/enums/field.enum';
+import {WeekDay} from '../common/enums/week-day.enum';
+import {ScheduleType} from '../common/enums/schedule-type.enum';
+import {PaginatedModel} from '../common/interfaces/paginated-model.interface';
+import {Result} from '../common/interfaces/result.interface';
+import {TIMEZONE} from 'src/common/constants/timezone.constant';
 
 @Injectable()
 export class AlertService {
@@ -102,33 +96,46 @@ export class AlertService {
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
     ) {
+      console.log('Alert', );
       if (alert.conditionStartTime || alert.conditionStartTime === null) {
+        console.log('Start Condition', );
         await this.alertModel.findByIdAndUpdate(alert.id, {
           conditionStartTime: new Date(),
         });
       } else {
+        console.log('Has condition started', );
         const startTime = new Date(alert.conditionStartTime);
         const now = new Date();
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
 
+        console.log('Has Check', duration >= alert.trigger.duration, !alert.active);
         if (duration >= alert.trigger.duration && !alert.active) {
           const field = alert.trigger.field;
           const value = alert.device[field];
-
-          await Promise.all([
-            this.sendAlertEmail(
-              alert,
+          console.log('Send Alert!!!', alert,
               alert.device.name,
               alert.device.lastUpdated,
               field,
-              value,
-            ),
-            this.alertModel.findByIdAndUpdate(alert.id, {
-              active: true,
-              conditionStartTime: null,
-            }),
-            this.alertLogService.createAlertLog(alert.id),
-          ]);
+              value);
+          try {
+            await Promise.all([
+              this.sendAlertEmail(
+                  alert,
+                  alert.device.name,
+                  alert.device.lastUpdated,
+                  field,
+                  value,
+              ),
+              this.alertModel.findByIdAndUpdate(alert.id, {
+                active: true,
+                conditionStartTime: null,
+              }),
+              this.alertLogService.createAlertLog(alert.id),
+            ]);
+          } catch (e) {
+            console.log('Error', e);
+          }
+
         }
       }
     } else {
@@ -185,6 +192,7 @@ export class AlertService {
 
   private isConditionMet(trigger: Trigger, value: number): boolean {
     console.log('Trigger', JSON.stringify(trigger, null, 3), value);
+    console.log('Trigger', trigger.range.type == RangeType.OUTSIDE, value < trigger.range.lower || value > trigger.range.upper);
     switch (trigger.range.type) {
       case RangeType.INSIDE:
         return value >= trigger.range.lower && value <= trigger.range.upper;
