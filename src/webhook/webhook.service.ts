@@ -106,7 +106,6 @@ export class WebhookService {
     pressureDeviceSlug: PressureDeviceSlug,
   ): Promise<void> {
     const pressure = Number(rawBody.toString('utf8'));
-    console.log('Pressure Event', pressure);
     const now = new Date();
     const device = await this.deviceService.updateDeviceBySlug(
       pressureDeviceSlug,

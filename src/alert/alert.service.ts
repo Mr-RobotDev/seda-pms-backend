@@ -34,9 +34,6 @@ export class AlertService {
     const updatedFields = change.updateDescription.updatedFields;
 
     const field = this.getFieldType(updatedFields);
-    if (device.toString() === '666184b0d03548858e438bde') {
-      console.log('!!!HandleUpdateChange Device', device.id, field);
-    }
     if (field) {
       const alerts = await this.filterAlerts(device.toString(), field);
       const currentDay = formatInTimeZone(
@@ -44,9 +41,6 @@ export class AlertService {
         TIMEZONE,
         'EEEE',
       ).toLowerCase() as WeekDay;
-      if (device.toString() === '666184b0d03548858e438bde') {
-        console.log('currentDay', currentDay);
-      }
       await this.processAlerts(alerts, updatedFields, currentDay);
     }
   }
@@ -82,53 +76,23 @@ export class AlertService {
     currentDay: WeekDay,
     value: number,
   ): Promise<void> {
-
-   // @ts-ignore
-    if (alert.device.id.toString() === '666184b0d03548858e438bde') {
-      console.log('activateAlert',
-          this.isScheduleMatched(alert, currentDay),
-          this.isConditionMet(alert.trigger, value)
-      );
-    }
-
     if (
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
     ) {
-      if (alert.device.id.toString() === '666184b0d03548858e438bde') {
-        console.log('Alert can be', );
-      }
-
       if (!alert.conditionStartTime) {
-
-        if (alert.device.id.toString() === '666184b0d03548858e438bde') {
-          console.log('Start Condition', );
-        }
         await this.alertModel.findByIdAndUpdate(alert.id, {
           conditionStartTime: new Date(),
         });
       } else {
 
-        if (alert.device.id.toString() === '666184b0d03548858e438bde') {
-          console.log('Has condition started', );
-        }
         const startTime = new Date(alert.conditionStartTime);
         const now = new Date();
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
 
-        if (alert.device.id.toString() === '666184b0d03548858e438bde') {
-          console.log('Has Check', duration >= alert.trigger.duration, !alert.active);
-        }
         if (duration >= alert.trigger.duration && !alert.active) {
           const field = alert.trigger.field;
           const value = alert.device[field];
-          if (alert.device.id.toString() === '666184b0d03548858e438bde') {
-            console.log('Send Alert!!!', alert,
-                alert.device.name,
-                alert.device.lastUpdated,
-                field,
-                value);
-          }
           try {
             await Promise.all([
               this.sendAlertEmail(
