@@ -84,7 +84,7 @@ export class AlertService {
   ): Promise<void> {
 
    // @ts-ignore
-    if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+    if (alert.device.id.toString() === '666184b0d03548858e438bde') {
       console.log('activateAlert',
           this.isScheduleMatched(alert, currentDay),
           this.isConditionMet(alert.trigger, value)
@@ -95,13 +95,13 @@ export class AlertService {
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
     ) {
-      if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+      if (alert.device.id.toString() === '666184b0d03548858e438bde') {
         console.log('Alert can be', );
       }
 
       if (!alert.conditionStartTime) {
 
-        if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+        if (alert.device.id.toString() === '666184b0d03548858e438bde') {
           console.log('Start Condition', );
         }
         await this.alertModel.findByIdAndUpdate(alert.id, {
@@ -109,20 +109,20 @@ export class AlertService {
         });
       } else {
 
-        if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+        if (alert.device.id.toString() === '666184b0d03548858e438bde') {
           console.log('Has condition started', );
         }
         const startTime = new Date(alert.conditionStartTime);
         const now = new Date();
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
 
-        if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+        if (alert.device.id.toString() === '666184b0d03548858e438bde') {
           console.log('Has Check', duration >= alert.trigger.duration, !alert.active);
         }
         if (duration >= alert.trigger.duration && !alert.active) {
           const field = alert.trigger.field;
           const value = alert.device[field];
-          if (alert.device.id.toString() === '6661856328fda2b9e86a4d1a') {
+          if (alert.device.id.toString() === '666184b0d03548858e438bde') {
             console.log('Send Alert!!!', alert,
                 alert.device.name,
                 alert.device.lastUpdated,
@@ -203,8 +203,6 @@ export class AlertService {
   }
 
   private isConditionMet(trigger: Trigger, value: number): boolean {
-    console.log('Trigger', JSON.stringify(trigger, null, 3), value);
-    console.log('Trigger', trigger.range.type == RangeType.OUTSIDE, value < trigger.range.lower || value > trigger.range.upper);
     switch (trigger.range.type) {
       case RangeType.INSIDE:
         return value >= trigger.range.lower && value <= trigger.range.upper;
