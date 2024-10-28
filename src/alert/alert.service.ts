@@ -88,6 +88,7 @@ export class AlertService {
     currentDay: WeekDay,
     value: number,
   ): Promise<void> {
+    console.log('alert.device.slug', alert.device.slug);
     if (alert.device.slug === 'g05-goods-out-pressure') {
       console.log('activateAlert',
           this.isScheduleMatched(alert, currentDay),
