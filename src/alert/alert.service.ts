@@ -88,14 +88,16 @@ export class AlertService {
     currentDay: WeekDay,
     value: number,
   ): Promise<void> {
-    console.log('alert.device', alert.device);
+
     // @ts-ignore
-    if (alert.device.id.toString() === 'g05-goods-out-pressure') {
+    console.log('alert.device', alert.device, alert.device.id.toString());
+    // @ts-ignore
+    // if (alert.device.id.toString() === 'g05-goods-out-pressure') {
       console.log('activateAlert',
           this.isScheduleMatched(alert, currentDay),
           this.isConditionMet(alert.trigger, value)
       );
-    }
+    // }
     if (
       this.isScheduleMatched(alert, currentDay) &&
       this.isConditionMet(alert.trigger, value)
