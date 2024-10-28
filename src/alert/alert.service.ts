@@ -46,7 +46,7 @@ export class AlertService {
     }
     if (field) {
       const alerts = await this.filterAlerts(device.toString(), field);
-      console.log('', );
+      console.log('alerts', JSON.stringify(alerts, null, 3));
       const currentDay = formatInTimeZone(
         new Date(),
         TIMEZONE,
