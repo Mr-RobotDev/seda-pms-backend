@@ -37,7 +37,6 @@ export class DeviceService {
     const changeStream = this.deviceModel.watch(pipeline, { fullDocument: 'updateLookup' });
 
     changeStream.on('change', async (change) => {
-      console.log('Full object change:', JSON.stringify(change, null, 2));
       if (change.operationType === 'update') {
         await this.alertService.handleUpdateChange(change);
       }
