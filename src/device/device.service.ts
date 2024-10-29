@@ -29,12 +29,11 @@ export class DeviceService {
   }
 
   getEventStream() {
-    const pipeline = [
-      { $match: { 'operationType': 'update' } },
-    ];
+    const pipeline = [{ $match: { operationType: 'update' } }];
 
-    // const changeStream = this.deviceModel.watch();
-    const changeStream = this.deviceModel.watch(pipeline, { fullDocument: 'updateLookup' });
+    const changeStream = this.deviceModel.watch(pipeline, {
+      fullDocument: 'updateLookup',
+    });
 
     changeStream.on('change', async (change) => {
       if (change.operationType === 'update') {

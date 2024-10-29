@@ -1,22 +1,28 @@
-import {BadRequestException, forwardRef, Inject, Injectable, NotFoundException,} from '@nestjs/common';
-import {InjectModel} from '@nestjs/mongoose';
-import {formatInTimeZone} from 'date-fns-tz';
-import {Alert} from './schema/alert.schema';
-import {Trigger} from './schema/trigger.schema';
-import {DeviceService} from '../device/device.service';
-import {AlertLogService} from '../alert-log/alert-log.service';
-import {MailService} from '../common/services/mail.service';
-import {CreateAlertDto} from './dto/create-alert.dto';
-import {UpdateAlertDto} from './dto/update-alert.dto';
-import {PaginationQueryDto} from '../common/dto/pagination.dto';
-import {RangeType} from './enums/range-type.enum';
-import {DeviceType} from '../device/enums/device-type.enum';
-import {Field} from '../common/enums/field.enum';
-import {WeekDay} from '../common/enums/week-day.enum';
-import {ScheduleType} from '../common/enums/schedule-type.enum';
-import {PaginatedModel} from '../common/interfaces/paginated-model.interface';
-import {Result} from '../common/interfaces/result.interface';
-import {TIMEZONE} from 'src/common/constants/timezone.constant';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { formatInTimeZone } from 'date-fns-tz';
+import { Alert } from './schema/alert.schema';
+import { Trigger } from './schema/trigger.schema';
+import { DeviceService } from '../device/device.service';
+import { AlertLogService } from '../alert-log/alert-log.service';
+import { MailService } from '../common/services/mail.service';
+import { CreateAlertDto } from './dto/create-alert.dto';
+import { UpdateAlertDto } from './dto/update-alert.dto';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { RangeType } from './enums/range-type.enum';
+import { DeviceType } from '../device/enums/device-type.enum';
+import { Field } from '../common/enums/field.enum';
+import { WeekDay } from '../common/enums/week-day.enum';
+import { ScheduleType } from '../common/enums/schedule-type.enum';
+import { PaginatedModel } from '../common/interfaces/paginated-model.interface';
+import { Result } from '../common/interfaces/result.interface';
+import { TIMEZONE } from '../common/constants/timezone.constant';
 
 @Injectable()
 export class AlertService {
@@ -85,7 +91,6 @@ export class AlertService {
           conditionStartTime: new Date(),
         });
       } else {
-
         const startTime = new Date(alert.conditionStartTime);
         const now = new Date();
         const duration = (now.getTime() - startTime.getTime()) / 1000 / 60;
@@ -96,11 +101,11 @@ export class AlertService {
           try {
             await Promise.all([
               this.sendAlertEmail(
-                  alert,
-                  alert.device.name,
-                  alert.device.lastUpdated,
-                  field,
-                  value,
+                alert,
+                alert.device.name,
+                alert.device.lastUpdated,
+                field,
+                value,
               ),
               this.alertModel.findByIdAndUpdate(alert.id, {
                 active: true,
@@ -109,9 +114,8 @@ export class AlertService {
               this.alertLogService.createAlertLog(alert.id),
             ]);
           } catch (e) {
-            console.log('Error', e);
+            console.log(e.message);
           }
-
         }
       }
     } else {
