@@ -40,7 +40,7 @@ export class AlertLogService {
         populate: [
           {
             path: 'alert',
-            select: 'name',
+            select: 'name trigger',
           },
           {
             path: 'user',

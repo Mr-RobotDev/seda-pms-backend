@@ -26,6 +26,16 @@ export class Trigger extends Document {
     required: true,
   })
   duration: number;
+
+  @Prop({
+    type: Number,
+  })
+  value?: number;
+
+  @Prop({
+    type: String,
+  })
+  unit?: string;
 }
 
 export const TriggerSchema = SchemaFactory.createForClass(Trigger);

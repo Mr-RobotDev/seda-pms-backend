@@ -98,23 +98,23 @@ export class AlertService {
         if (duration >= alert.trigger.duration && !alert.active) {
           const field = alert.trigger.field;
           const value = alert.device[field];
+
           try {
             await Promise.all([
-              this.sendAlertEmail(
-                alert,
-                alert.device.name,
-                alert.device.lastUpdated,
-                field,
-                value,
-              ),
+              this.sendAlertEmail(alert),
               this.alertModel.findByIdAndUpdate(alert.id, {
                 active: true,
                 conditionStartTime: null,
+                trigger: {
+                  ...alert.trigger.toObject(),
+                  value,
+                  unit: this.getFieldUnit(field),
+                },
               }),
               this.alertLogService.createAlertLog(alert.id),
             ]);
           } catch (e) {
-            console.log(e.message);
+            console.error(e.message);
           }
         }
       }
@@ -133,15 +133,16 @@ export class AlertService {
     });
   }
 
-  private async sendAlertEmail(
-    alert: Alert,
-    deviceName: string,
-    lastUpdated: Date,
-    field: Field,
-    value: number,
-  ) {
+  private async sendAlertEmail(alert: Alert) {
     try {
+      const deviceName = alert.device.name;
+      const lastUpdated = alert.device.lastUpdated;
+      const field = alert.trigger.field;
+      const value = alert.device[field];
       const unit = this.getFieldUnit(field);
+      const lowerRange = alert.trigger.range.lower;
+      const upperRange = alert.trigger.range.upper;
+
       const updated = formatInTimeZone(
         lastUpdated,
         TIMEZONE,
@@ -154,6 +155,8 @@ export class AlertService {
         value,
         unit,
         updated,
+        lowerRange,
+        upperRange,
       );
     } catch (error) {
       console.error('Failed to send alert email:', error);
