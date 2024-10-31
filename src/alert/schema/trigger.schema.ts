@@ -29,15 +29,13 @@ export class Trigger extends Document {
 
   @Prop({
     type: Number,
-    required: true,
   })
-  value: number;
+  value?: number;
 
   @Prop({
     type: String,
-    required: true,
   })
-  unit: string;
+  unit?: string;
 }
 
 export const TriggerSchema = SchemaFactory.createForClass(Trigger);
