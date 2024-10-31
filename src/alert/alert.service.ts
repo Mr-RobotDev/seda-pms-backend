@@ -140,6 +140,8 @@ export class AlertService {
       const field = alert.trigger.field;
       const value = alert.device[field];
       const unit = this.getFieldUnit(field);
+      const lowerRange = alert.trigger.range.lower;
+      const upperRange = alert.trigger.range.upper;
 
       const updated = formatInTimeZone(
         lastUpdated,
@@ -153,6 +155,8 @@ export class AlertService {
         value,
         unit,
         updated,
+        lowerRange,
+        upperRange,
       );
     } catch (error) {
       console.error('Failed to send alert email:', error);

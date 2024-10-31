@@ -70,6 +70,8 @@ export class MailService {
     value: number,
     sign: string,
     datetime: string,
+    lowerRange: number,
+    upperRange: number,
   ): Promise<boolean> {
     try {
       const promises = emails.map((email) => {
@@ -82,6 +84,8 @@ export class MailService {
             value,
             sign,
             datetime,
+            lowerRange,
+            upperRange,
           },
           templateId: this.configService.get<string>(
             'sendgrid.deviceAlertTemplate',
